@@ -12,7 +12,8 @@ type Intent = 'tracking' | 'certificate' | 'verification' | 'general'
 function detectIntent(msg: string): Intent {
   const m = msg.toLowerCase()
   if (/track|awb|courier|ship|deliver|medal.*status|where.*medal|dispatch|parcel/i.test(m)) return 'tracking'
-  if (/certif/i.test(m)) return 'certificate'
+  // Match certificate even with common typos (certficate, certifcate, cert)
+  if (/cert/i.test(m)) return 'certificate'
   if (/verif|verified|pending/i.test(m)) return 'verification'
   return 'general'
 }
@@ -58,28 +59,17 @@ function buildPreviewDraft(name: string, records: MasterRecord[], customerMsg: s
       }
     }
 
-    if (intent === 'certificate') {
+    if (intent === 'certificate' || intent === 'verification') {
       if (r.certLink) {
-        lines.push(`Your certificate is ready! You can download it here:`)
+        lines.push('Great news — your certificate is ready! 🎉 You can download it here:')
         lines.push(r.certLink)
       } else {
         const vs = (r.verificationStatus || '').trim()
         if (/verified/i.test(vs)) {
-          lines.push('Your submission has been verified and your certificate is being prepared. You will receive it shortly.')
+          lines.push('Your submission has been verified ✅ and your certificate is being prepared. You will receive it shortly.')
         } else {
-          lines.push("Your certificate hasn't been issued yet — your submission is pending verification. We'll notify you once it's ready.")
+          lines.push("Your certificate hasn't been issued yet. Your submission is currently under review — we'll send it to you as soon as it's verified.")
         }
-      }
-    }
-
-    if (intent === 'verification') {
-      const vs = (r.verificationStatus || '').trim()
-      if (/verified/i.test(vs)) {
-        lines.push('Great news — your submission has been verified! ✅')
-        if (r.certLink) lines.push(`Your certificate is ready: ${r.certLink}`)
-      } else if (vs) {
-        lines.push(`Your current verification status is: **${vs}**`)
-        lines.push('Our team will review your submission and update you soon.')
       }
     }
 
