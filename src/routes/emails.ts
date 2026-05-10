@@ -57,12 +57,13 @@ function buildPreviewDraft(name: string, records: MasterRecord[]): string {
 // POST /api/emails/preview — ops UI calls this to generate a draft reply
 emailsRouter.post('/preview', async (req: Request, res: Response) => {
   try {
-    const { senderEmail, senderPhone, senderName, customerMessage = '' } = req.body as {
-      senderEmail?: string
-      senderPhone?: string
-      senderName?: string
-      customerMessage?: string
-    }
+    const b = req.body as Record<string, string>
+
+    // Accept any field name the UI might send for email/phone
+    const senderEmail   = b.senderEmail || b.from || b.email || b.fromEmail || b.sender || ''
+    const senderPhone   = b.senderPhone || b.phone || b.mobile || ''
+    const senderName    = b.senderName  || b.fromName || b.name || ''
+    const customerMessage = b.customerMessage || b.body || b.message || b.emailBody || ''
 
     if (!senderEmail && !senderPhone) {
       res.status(400).json({ error: 'Provide senderEmail or senderPhone' })
