@@ -59,10 +59,10 @@ emailsRouter.post('/preview', async (req: Request, res: Response) => {
   try {
     const b = req.body as Record<string, string>
 
-    // Accept any field name the UI might send for email/phone
-    const senderEmail   = b.senderEmail || b.from || b.email || b.fromEmail || b.sender || ''
-    const senderPhone   = b.senderPhone || b.phone || b.mobile || ''
-    const senderName    = b.senderName  || b.fromName || b.name || ''
+    // UI sends { fromName: "email@x.com", body: "customer message" }
+    const senderEmail     = b.senderEmail || b.from || b.email || b.fromEmail || b.sender || b.fromName || ''
+    const senderPhone     = b.senderPhone || b.phone || b.mobile || ''
+    const senderName      = b.senderName  || b.name || ''
     const customerMessage = b.customerMessage || b.body || b.message || b.emailBody || ''
 
     if (!senderEmail && !senderPhone) {
