@@ -1,6 +1,6 @@
 import { getAccessToken } from '../utils/google-auth'
 
-const SPREADSHEET_ID = '1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM'
+const SPREADSHEET_ID = '1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU'
 
 export interface MasterRecord {
   source: string

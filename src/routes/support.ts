@@ -245,7 +245,7 @@ supportRouter.get('/debug', async (_req: Request, res: Response) => {
     if (!token) { res.json({ error: 'No token' }); return }
 
     const metaRes = await fetch(
-      'https://sheets.googleapis.com/v4/spreadsheets/1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM?fields=sheets.properties',
+      'https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU?fields=sheets.properties',
       { headers: { Authorization: `Bearer ${token}` } }
     )
     const meta = await metaRes.json() as { sheets?: { properties: { title: string } }[] }
@@ -253,7 +253,7 @@ supportRouter.get('/debug', async (_req: Request, res: Response) => {
     const sheetTitle = allTabs.find(t => /all orders/i.test(t)) || allTabs[0]
 
     const sheetRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM/values/${encodeURIComponent(sheetTitle + '!A1:BH3')}`,
+      `https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU/values/${encodeURIComponent(sheetTitle + '!A1:BH3')}`,
       { headers: { Authorization: `Bearer ${token}` } }
     )
     const data = await sheetRes.json() as { values?: string[][] }
