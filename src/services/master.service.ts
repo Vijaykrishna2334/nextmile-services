@@ -82,6 +82,11 @@ function buildRecord(row: string[], h: string[]): MasterRecord {
   }
 }
 
+function isValidOrder(r: MasterRecord): boolean {
+  // Must have an order ID and a product/event name — skip pure submission rows
+  return r.orderId.trim() !== '' && r.product.trim() !== ''
+}
+
 export async function lookupByEmail(email: string): Promise<MasterRecord[]> {
   const { headers, rows } = await fetchMasterRows()
   if (!headers.length) return []
@@ -91,6 +96,7 @@ export async function lookupByEmail(email: string): Promise<MasterRecord[]> {
   return rows
     .filter(r => (r[emailCol] || '').trim().toLowerCase() === needle)
     .map(r => buildRecord(r, headers))
+    .filter(isValidOrder)
 }
 
 export async function lookupByPhone(phone: string): Promise<MasterRecord[]> {
@@ -102,4 +108,5 @@ export async function lookupByPhone(phone: string): Promise<MasterRecord[]> {
   return rows
     .filter(r => normalizePhone(r[phoneCol] || '') === needle)
     .map(r => buildRecord(r, headers))
+    .filter(isValidOrder)
 }
