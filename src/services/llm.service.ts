@@ -1,80 +1,122 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { getAccessToken } from '../utils/google-auth'
 import { MasterRecord } from './master.service'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const PROJECT_ID = '963603495843'
+const ENGINE_ID  = 'nextmile-support-bot_1777555638876'
+const ANSWER_URL = `https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_ID}/locations/global/collections/default_collection/engines/${ENGINE_ID}/servingConfigs/default_search:answer`
 
 export interface LLMDraftInput {
-  senderName: string
+  senderName:      string
   customerMessage: string
-  records: MasterRecord[]
+  records:         MasterRecord[]
   relevantRecords: MasterRecord[]
 }
 
 function formatRecordsForPrompt(records: MasterRecord[]): string {
-  if (!records.length) return 'No orders found for this contact.'
+  if (!records.length) return '(none)'
   return records.map((r, i) => {
-    const lines = [`Order ${i + 1}:`]
-    if (r.orderId)            lines.push(`  Order ID: ${r.orderId}`)
-    if (r.product)            lines.push(`  Event/Product: ${r.product}`)
-    if (r.deliveryStatus)     lines.push(`  Medal Delivery Status: ${r.deliveryStatus}`)
-    if (r.awb)                lines.push(`  AWB Number: ${r.awb}`)
-    if (r.verificationStatus) lines.push(`  Verification Status: ${r.verificationStatus}`)
-    if (r.certLink)           lines.push(`  Certificate Link: ${r.certLink}`)
-    if (r.paymentStatus)      lines.push(`  Payment Status: ${r.paymentStatus}`)
-    return lines.join('\n')
+    const parts = [`Order ${i + 1}:`]
+    if (r.orderId)            parts.push(`  Order ID: ${r.orderId}`)
+    if (r.product)            parts.push(`  Event: ${r.product}`)
+    if (r.deliveryStatus)     parts.push(`  Medal Delivery Status: ${r.deliveryStatus}`)
+    if (r.awb)                parts.push(`  AWB: ${r.awb}  →  Track: https://ship.nimbuspost.com/shipping/tracking/${r.awb}`)
+    if (r.certLink)           parts.push(`  Certificate Link: ${r.certLink}`)
+    if (r.verificationStatus) parts.push(`  Verification Status: ${r.verificationStatus}`)
+    if (r.paymentStatus)      parts.push(`  Payment Status: ${r.paymentStatus}`)
+    return parts.join('\n')
   }).join('\n\n')
 }
 
 export async function generateEmailDraft(input: LLMDraftInput): Promise<string> {
   const { senderName, customerMessage, records, relevantRecords } = input
-  const firstName = (senderName || 'there').split(' ')[0]
+  const firstName  = (senderName || 'there').split(' ')[0]
+  const hasOrders  = records.length > 0
+  const focusData  = relevantRecords.length > 0 ? relevantRecords : records
 
-  const noOrders = records.length === 0
+  const customerDataBlock = hasOrders
+    ? `CUSTOMER ORDER DATA (from master sheet — use this as ground truth):
+${formatRecordsForPrompt(focusData)}
+${records.length > relevantRecords.length ? `\nOther orders this customer has (not the focus of this query):\n${formatRecordsForPrompt(records.filter(r => !focusData.includes(r)))}` : ''}`
+    : `CUSTOMER ORDER DATA: No orders found for this contact.`
 
-  const systemPrompt = `You are a warm, helpful customer support agent for NextMile — a virtual fitness challenge brand in India that sends physical medals to participants who complete running/fitness challenges.
+  const preamble = `You are the NextMile Email Support Agent. Write a professional, warm, human-sounding email reply to a customer.
 
-Your job is to write a professional yet friendly email reply to a customer inquiry. The reply must:
-- Sound human, warm, and conversational — NOT like a data dump
-- Address only what the customer asked about
-- Be concise but complete — no unnecessary padding
-- Use a friendly tone with light emoji where appropriate (1–2 max, not excessive)
-- NEVER include submission links or proof upload links
-- ALWAYS include certificate download links if available
-- ALWAYS include AWB tracking links in format: https://ship.nimbuspost.com/shipping/tracking/{AWB}
-- If the customer has multiple orders, present each one clearly with the event name as a natural subheading
-- End with the standard sign-off
-
-Sign-off format (always end with this exactly):
+STRICT RULES:
+1. Address the customer by first name: ${firstName}
+2. Use the customer order data below as ground truth — never invent or assume any data
+3. Sound warm and human — like a real support person, not a data printout
+4. Address ONLY what the customer asked — don't dump all fields if not relevant
+5. ALWAYS include the full certificate link if certLink is available
+6. ALWAYS include the full AWB tracking link if AWB is available
+7. NEVER include submission links or proof upload links
+8. If no orders found, ask for their registered email/phone or Order ID
+9. Use 1-2 emojis max — keep it professional
+10. End EXACTLY with:
 Warm regards,
 NextMile Support Team
-support@gonextmile.in | WhatsApp: +91 95352 12425`
+support@gonextmile.in | WhatsApp: +91 95352 12425
 
-  const userPrompt = noOrders
-    ? `Customer name: ${firstName}
+${customerDataBlock}
+
+Customer's name: ${firstName}
 Customer's message: "${customerMessage || 'general inquiry'}"
 
-No orders found for this contact. Write a friendly reply asking them to share their registered email/phone or Order ID so we can look them up.`
-    : `Customer name: ${firstName}
-Customer's message: "${customerMessage || 'general inquiry'}"
+Now write the email reply:`
 
-All orders for this customer:
-${formatRecordsForPrompt(records)}
-${relevantRecords.length < records.length ? `\nOrders relevant to their query (focus your reply on these):
-${formatRecordsForPrompt(relevantRecords)}` : ''}
+  const token = await getAccessToken('CHATBOT_SERVICE_ACCOUNT_JSON', 'https://www.googleapis.com/auth/cloud-platform')
+  if (!token) throw new Error('Could not get access token for Discovery Engine')
 
-Write a helpful email reply addressing their query. Use the data above — don't invent or assume anything not listed.`
+  const body = {
+    query: { text: customerMessage || 'order status', queryId: '' },
+    session: '',
+    relatedQuestionsSpec: { enable: false },
+    answerGenerationSpec: {
+      ignoreAdversarialQuery: false,
+      ignoreNonAnswerSeekingQuery: false,
+      ignoreLowRelevantContent: false,
+      multimodalSpec: {},
+      includeCitations: false,
+      promptSpec: { preamble },
+      modelSpec: { modelVersion: 'gemini-2.5-flash/answer_gen/v1' },
+    },
+  }
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 600,
-    messages: [{ role: 'user', content: userPrompt }],
-    system: systemPrompt,
+  const res  = await fetch(ANSWER_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body:    JSON.stringify(body),
+    signal:  AbortSignal.timeout(15000),
   })
 
-  const text = message.content.find(b => b.type === 'text')?.text || ''
-  // Ensure reply always starts with "Hi <name>"
-  if (!text.trim().startsWith('Hi')) {
-    return `Hi ${firstName},\n\n${text.trim()}`
+  const data = await res.json() as { answer?: { answerText?: string }; summary?: { summaryText?: string } }
+  const raw  = data?.answer?.answerText || data?.summary?.summaryText || ''
+  const text = raw.replace(/\[\d+\]/g, '').trim()
+
+  if (!text || text.toLowerCase().startsWith('a summary could not')) {
+    // Fallback: simple template if Discovery Engine fails
+    return buildFallbackDraft(firstName, records, relevantRecords, customerMessage)
   }
-  return text.trim()
+
+  return text
+}
+
+function buildFallbackDraft(
+  firstName:       string,
+  records:         MasterRecord[],
+  relevantRecords: MasterRecord[],
+  customerMessage: string,
+): string {
+  const focus = relevantRecords.length > 0 ? relevantRecords : records
+  if (!focus.length) {
+    return `Hi ${firstName},\n\nThank you for reaching out to NextMile! 🏃‍♂️\n\nWe couldn't find an order linked to your contact details. Could you please share your registered email/phone or Order ID? We'll get back to you right away.\n\nWarm regards,\nNextMile Support Team\nsupport@gonextmile.in | WhatsApp: +91 95352 12425`
+  }
+  const lines = [`Hi ${firstName},`, '', "Thank you for writing to us! Here's the latest on your order(s):"]
+  focus.forEach(r => {
+    lines.push('', `📋 ${r.product || `Order #${r.orderId}`}`)
+    if (r.deliveryStatus) lines.push(`   Medal: ${r.deliveryStatus}`)
+    if (r.awb)            lines.push(`   Track: https://ship.nimbuspost.com/shipping/tracking/${r.awb}`)
+    if (r.certLink)       lines.push(`   Certificate: ${r.certLink}`)
+  })
+  lines.push('', 'Warm regards,', 'NextMile Support Team', 'support@gonextmile.in | WhatsApp: +91 95352 12425')
+  return lines.join('\n')
 }
