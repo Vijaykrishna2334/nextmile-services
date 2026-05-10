@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { lookupByEmail, lookupByPhone, MasterRecord } from '../services/master.service'
+import { generateEmailDraft } from '../services/llm.service'
 
 export const supportRouter = Router()
 
@@ -218,16 +219,26 @@ supportRouter.post('/reply', async (req: Request, res: Response) => {
     const intent          = detectIntent(customerMessage)
     const relevantRecords = matchEventRecords(customerMessage, allRecords)
     const resolvedName    = senderName || allRecords[0]?.fullName || 'there'
-    const draft           = buildDraft(resolvedName, allRecords, relevantRecords, intent)
+    const draft           = await generateEmailDraft({
+      senderName:      resolvedName,
+      customerMessage,
+      records:         allRecords,
+      relevantRecords,
+    })
 
     res.json({
-      draft,                          // ready-to-paste email body
+      draft,
+      reply: draft,
+      html: `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>body{font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;padding:24px;max-width:600px}a{color:#4f46e5}</style></head><body>
+${draft.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>')}
+</body></html>`,
       found:           allRecords.length > 0,
       totalOrders:     allRecords.length,
       matchedOrders:   relevantRecords.length,
       intent,
-      allRecords,                     // full data for ops use
-      relevantRecords,                // filtered subset used for the draft
+      allRecords,
+      relevantRecords,
     })
   } catch (err) {
     console.error('[support/reply] Error:', err)
