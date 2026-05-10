@@ -249,9 +249,20 @@ supportRouter.get('/debug', async (_req: Request, res: Response) => {
       { headers: { Authorization: `Bearer ${token}` } }
     )
     const meta = await metaRes.json() as { sheets?: { properties: { sheetId: number; title: string } }[] }
-    const allSheets = (meta.sheets || []).map(s => ({ id: s.properties.sheetId, title: s.properties.title }))
 
-    res.json({ allSheets })
+    const sheetRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU/values/${encodeURIComponent('MASTER!A1:BH3')}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    const data = await sheetRes.json() as { values?: string[][] }
+    const rows = data.values || []
+    const headers = rows[0] || []
+
+    res.json({
+      totalCols: headers.length,
+      headers,
+      sampleRow: rows[1] || [],
+    })
   } catch (err) {
     res.status(500).json({ error: String(err) })
   }
