@@ -248,28 +248,10 @@ supportRouter.get('/debug', async (_req: Request, res: Response) => {
       'https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU?fields=sheets.properties',
       { headers: { Authorization: `Bearer ${token}` } }
     )
-    const meta = await metaRes.json() as { sheets?: { properties: { title: string } }[] }
-    const allTabs = (meta.sheets || []).map(s => s.properties.title)
-    const sheetTitle = allTabs.find(t => /all orders/i.test(t)) || allTabs[0]
+    const meta = await metaRes.json() as { sheets?: { properties: { sheetId: number; title: string } }[] }
+    const allSheets = (meta.sheets || []).map(s => ({ id: s.properties.sheetId, title: s.properties.title }))
 
-    const sheetRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU/values/${encodeURIComponent(sheetTitle + '!A1:BH3')}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    const data = await sheetRes.json() as { values?: string[][] }
-    const rows = data.values || []
-    const headers = rows[0] || []
-    const emailColIdx = headers.findIndex(h => h.trim().toLowerCase().includes('email'))
-
-    res.json({
-      sheetTitle,
-      totalCols: headers.length,
-      emailColIdx,
-      emailColName: headers[emailColIdx],
-      headers,
-      sampleRow1: rows[1] || [],
-      sampleRow2: rows[2] || [],
-    })
+    res.json({ allSheets })
   } catch (err) {
     res.status(500).json({ error: String(err) })
   }
