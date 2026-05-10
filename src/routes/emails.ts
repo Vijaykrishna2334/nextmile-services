@@ -77,7 +77,21 @@ emailsRouter.post('/preview', async (req: Request, res: Response) => {
     const name  = senderName || records[0]?.fullName || 'there'
     const draft = buildPreviewDraft(name, records)
 
-    res.json({ draft, found: records.length > 0, totalOrders: records.length, records })
+    // Convert plain text to HTML for the iframe preview
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>body{font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;padding:24px;max-width:600px}
+a{color:#4f46e5}strong{font-weight:700}</style></head><body>
+${draft.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>')}
+</body></html>`
+
+    res.json({
+      reply: draft,   // plain text — what UI reads as data.reply
+      html,           // HTML version — what UI reads as data.html
+      draft,          // alias for /api/support/reply consumers
+      found: records.length > 0,
+      totalOrders: records.length,
+      records,
+    })
   } catch (err) {
     console.error('[emails/preview] Error:', err)
     res.status(500).json({ error: 'Preview failed' })
