@@ -46,8 +46,9 @@ async function fetchMasterRows(): Promise<string[][]> {
   const allTabs = (meta.sheets || []).map(s => s.properties.title)
 
   const sheetTitle =
+    allTabs.find(t => t === 'All Orders') ||
+    allTabs.find(t => /all orders/i.test(t)) ||
     allTabs.find(t => t === 'MASTER') ||
-    allTabs.find(t => /^master$/i.test(t)) ||
     allTabs.find(t => /master/i.test(t)) || ''
 
   if (!sheetTitle) return []

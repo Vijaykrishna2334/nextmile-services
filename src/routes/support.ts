@@ -236,25 +236,6 @@ supportRouter.post('/reply', async (req: Request, res: Response) => {
 })
 
 /**
- * GET /api/support/debug-tabs — lists all sheet tab names (remove after debugging)
- */
-supportRouter.get('/debug-tabs', async (_req: Request, res: Response) => {
-  try {
-    const { getAccessToken } = await import('../utils/google-auth')
-    const token = await getAccessToken('GOOGLE_SERVICE_ACCOUNT_JSON', 'https://www.googleapis.com/auth/spreadsheets.readonly')
-    if (!token) { res.json({ error: 'No token' }); return }
-    const metaRes = await fetch(
-      'https://sheets.googleapis.com/v4/spreadsheets/1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM?fields=sheets.properties',
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    const meta = await metaRes.json() as { sheets?: { properties: { sheetId: number; title: string } }[] }
-    res.json({ tabs: (meta.sheets || []).map(s => s.properties.title) })
-  } catch (err) {
-    res.status(500).json({ error: String(err) })
-  }
-})
-
-/**
  * GET /api/support/lookup?email=...&phone=...
  * Raw record lookup for the ops dashboard — returns all orders for that contact.
  */
