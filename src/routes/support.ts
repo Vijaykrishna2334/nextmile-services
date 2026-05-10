@@ -236,39 +236,6 @@ supportRouter.post('/reply', async (req: Request, res: Response) => {
 })
 
 /**
- * GET /api/support/debug — shows sheet headers + sample row (remove after debugging)
- */
-supportRouter.get('/debug', async (_req: Request, res: Response) => {
-  try {
-    const { getAccessToken } = await import('../utils/google-auth')
-    const token = await getAccessToken('GOOGLE_SERVICE_ACCOUNT_JSON', 'https://www.googleapis.com/auth/spreadsheets.readonly')
-    if (!token) { res.json({ error: 'No token' }); return }
-
-    const metaRes = await fetch(
-      'https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU?fields=sheets.properties',
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    const meta = await metaRes.json() as { sheets?: { properties: { sheetId: number; title: string } }[] }
-
-    const sheetRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/1zzYje4p5hoEzyw5CRIShYx-alSCaOcUBRI0zkNnTBeU/values/${encodeURIComponent('MASTER!A1:BH3')}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    const data = await sheetRes.json() as { values?: string[][] }
-    const rows = data.values || []
-    const headers = rows[0] || []
-
-    res.json({
-      totalCols: headers.length,
-      headers,
-      sampleRow: rows[1] || [],
-    })
-  } catch (err) {
-    res.status(500).json({ error: String(err) })
-  }
-})
-
-/**
  * GET /api/support/lookup?email=...&phone=...
  * Raw record lookup for the ops dashboard — returns all orders for that contact.
  */
