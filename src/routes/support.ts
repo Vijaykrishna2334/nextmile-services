@@ -236,6 +236,46 @@ supportRouter.post('/reply', async (req: Request, res: Response) => {
 })
 
 /**
+ * GET /api/support/debug — shows sheet headers + sample row (remove after debugging)
+ */
+supportRouter.get('/debug', async (_req: Request, res: Response) => {
+  try {
+    const { getAccessToken } = await import('../utils/google-auth')
+    const token = await getAccessToken('GOOGLE_SERVICE_ACCOUNT_JSON', 'https://www.googleapis.com/auth/spreadsheets.readonly')
+    if (!token) { res.json({ error: 'No token' }); return }
+
+    const metaRes = await fetch(
+      'https://sheets.googleapis.com/v4/spreadsheets/1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM?fields=sheets.properties',
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    const meta = await metaRes.json() as { sheets?: { properties: { title: string } }[] }
+    const allTabs = (meta.sheets || []).map(s => s.properties.title)
+    const sheetTitle = allTabs.find(t => /all orders/i.test(t)) || allTabs[0]
+
+    const sheetRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM/values/${encodeURIComponent(sheetTitle + '!A1:BH3')}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    const data = await sheetRes.json() as { values?: string[][] }
+    const rows = data.values || []
+    const headers = rows[0] || []
+    const emailColIdx = headers.findIndex(h => h.trim().toLowerCase().includes('email'))
+
+    res.json({
+      sheetTitle,
+      totalCols: headers.length,
+      emailColIdx,
+      emailColName: headers[emailColIdx],
+      headers,
+      sampleRow1: rows[1] || [],
+      sampleRow2: rows[2] || [],
+    })
+  } catch (err) {
+    res.status(500).json({ error: String(err) })
+  }
+})
+
+/**
  * GET /api/support/lookup?email=...&phone=...
  * Raw record lookup for the ops dashboard — returns all orders for that contact.
  */
