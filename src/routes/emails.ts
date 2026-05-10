@@ -5,50 +5,103 @@ import { lookupByEmail, lookupByPhone, MasterRecord } from '../services/master.s
 
 export const emailsRouter = Router()
 
-// ── Shared draft builder (mirrors support.ts logic) ───────────────────────────
+// ── Intent detection ──────────────────────────────────────────────────────────
 
-function deliveryLabel(s: string) {
-  const v = (s || '').toLowerCase()
-  if (v.includes('deliver')) return '✅ Delivered'
-  if (v.includes('cancel'))  return '❌ Cancelled / Returned'
-  if (v.includes('transit')) return '🚚 In Transit'
-  return '📦 Not yet shipped'
+type Intent = 'tracking' | 'certificate' | 'verification' | 'general'
+
+function detectIntent(msg: string): Intent {
+  const m = msg.toLowerCase()
+  if (/track|awb|courier|ship|deliver|medal.*status|where.*medal|dispatch|parcel/i.test(m)) return 'tracking'
+  if (/certif/i.test(m)) return 'certificate'
+  if (/verif|verified|pending/i.test(m)) return 'verification'
+  return 'general'
 }
 
-function buildPreviewDraft(name: string, records: MasterRecord[]): string {
-  const first = (name || 'there').split(' ')[0]
+// ── Draft builder ─────────────────────────────────────────────────────────────
+
+function buildPreviewDraft(name: string, records: MasterRecord[], customerMsg: string): string {
+  const first  = (name || 'there').split(' ')[0]
+  const intent = detectIntent(customerMsg)
+
   if (!records.length) {
-    return [
-      `Hi ${first},`,
-      '',
-      "Thank you for reaching out to NextMile! 🏃‍♂️",
-      '',
-      "We couldn't find any order linked to your contact details. Could you please share your Order ID or the email/phone used during registration?",
-      '',
-      'Best regards,\nNextMile Support Team\nsupport@gonextmile.in | WhatsApp: +91 95352 12425',
-    ].join('\n')
+    return `Hi ${first},\n\nThank you for reaching out to NextMile! 🏃‍♂️\n\nWe looked up your details but couldn't find an order linked to this email. Could you please share the email or phone number you used when registering? We'll get back to you right away.\n\nBest regards,\nNextMile Support Team\nsupport@gonextmile.in | WhatsApp: +91 95352 12425`
   }
 
-  const lines = [`Hi ${first},`, '', `Thank you for writing to us! 🏃‍♂️`, '']
-  if (records.length > 1) lines.push(`We can see you're registered for ${records.length} events with us:`, '')
+  const lines: string[] = [`Hi ${first},`, '']
+
+  if (intent === 'tracking') {
+    lines.push("Thanks for reaching out! Here's the latest update on your medal delivery:")
+  } else if (intent === 'certificate') {
+    lines.push("Thanks for reaching out! Here are your certificate details:")
+  } else if (intent === 'verification') {
+    lines.push("Thanks for reaching out! Here's your verification status:")
+  } else {
+    lines.push("Thanks for writing to us! Here's a summary of your order(s) with NextMile:")
+  }
+
+  lines.push('')
 
   records.forEach((r, i) => {
-    if (records.length > 1) lines.push(`**${r.product || `Order #${r.orderId}`}:**`)
-    lines.push(`📋 Order ID: #${r.orderId}`)
-    if (r.product) lines.push(`🎽 Event: ${r.product}`)
-    lines.push(`📦 Medal Status: ${deliveryLabel(r.deliveryStatus)}`)
-    if (r.awb) {
-      lines.push(`🔢 AWB: ${r.awb}`)
-      lines.push(`🔗 Track: https://ship.nimbuspost.com/shipping/tracking/${r.awb}`)
+    if (records.length > 1) lines.push(`**${r.product || `Order #${r.orderId}`}**`)
+
+    if (intent === 'tracking') {
+      const s = (r.deliveryStatus || '').toLowerCase()
+      const label = s.includes('deliver') ? 'Your medal has been delivered ✅'
+                  : s.includes('transit') ? 'Your medal is on the way 🚚'
+                  : s.includes('cancel')  ? 'This order was cancelled/returned ❌'
+                  : 'Your medal is being processed 📦'
+      lines.push(label)
+      if (r.awb) {
+        lines.push(`You can track it here: https://ship.nimbuspost.com/shipping/tracking/${r.awb}`)
+      } else {
+        lines.push('The AWB number is not yet assigned — your medal will be dispatched soon.')
+      }
     }
-    if (r.certLink) lines.push(`🏅 Certificate: ${r.certLink}`)
-    if (r.submissionLink) lines.push(`📎 Submission: ${r.submissionLink}`)
-    const vs = (r.verificationStatus || '').trim()
-    if (vs) lines.push(`✔️ Verification: ${vs}`)
+
+    if (intent === 'certificate') {
+      if (r.certLink) {
+        lines.push(`Your certificate is ready! You can download it here:`)
+        lines.push(r.certLink)
+      } else {
+        const vs = (r.verificationStatus || '').trim()
+        if (/verified/i.test(vs)) {
+          lines.push('Your submission has been verified and your certificate is being prepared. You will receive it shortly.')
+        } else {
+          lines.push("Your certificate hasn't been issued yet — your submission is pending verification. We'll notify you once it's ready.")
+        }
+      }
+    }
+
+    if (intent === 'verification') {
+      const vs = (r.verificationStatus || '').trim()
+      if (/verified/i.test(vs)) {
+        lines.push('Great news — your submission has been verified! ✅')
+        if (r.certLink) lines.push(`Your certificate is ready: ${r.certLink}`)
+      } else if (vs) {
+        lines.push(`Your current verification status is: **${vs}**`)
+        lines.push('Our team will review your submission and update you soon.')
+      }
+    }
+
+    if (intent === 'general') {
+      const s = (r.deliveryStatus || '').toLowerCase()
+      lines.push(`Medal Status: ${s.includes('deliver') ? 'Delivered ✅' : s.includes('transit') ? 'In Transit 🚚' : 'Processing 📦'}`)
+      if (r.awb) lines.push(`Track your medal: https://ship.nimbuspost.com/shipping/tracking/${r.awb}`)
+      if (r.certLink) lines.push(`Certificate: ${r.certLink}`)
+    }
+
     if (i < records.length - 1) lines.push('')
   })
 
-  lines.push('', 'If you have any other questions, just reply or reach us on WhatsApp.', '', 'Best regards,', 'NextMile Support Team', 'support@gonextmile.in | WhatsApp: +91 95352 12425')
+  lines.push(
+    '',
+    'If you have any other questions, feel free to reply to this email or reach us on WhatsApp.',
+    '',
+    'Warm regards,',
+    'NextMile Support Team',
+    'support@gonextmile.in | WhatsApp: +91 95352 12425',
+  )
+
   return lines.join('\n')
 }
 
@@ -75,7 +128,7 @@ emailsRouter.post('/preview', async (req: Request, res: Response) => {
     if (!records.length && senderPhone)        records = await lookupByPhone(senderPhone)
 
     const name  = senderName || records[0]?.fullName || 'there'
-    const draft = buildPreviewDraft(name, records)
+    const draft = buildPreviewDraft(name, records, customerMessage)
 
     // Convert plain text to HTML for the iframe preview
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
