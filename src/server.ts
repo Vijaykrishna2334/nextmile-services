@@ -4,6 +4,7 @@ import path from 'path'
 import { config } from 'dotenv'
 import { chatRouter } from './routes/chat'
 import { trackRouter } from './routes/track'
+import { emailsRouter } from './routes/emails'
 import { supportRouter } from './routes/support'
 import { startCronJobs } from './cron/email-drafts'
 import { connectDB } from './db/connect'
@@ -35,6 +36,7 @@ app.get('/health', (_, res) => res.json({ status: 'ok', ts: new Date().toISOStri
 
 app.use('/api/chat',    chatRouter)
 app.use('/api/track',   trackRouter)
+app.use('/api/emails',  emailsRouter)
 app.use('/api/support', supportRouter)
 
 async function main() {

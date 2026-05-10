@@ -1,60 +1,110 @@
 import { Router, Request, Response } from 'express'
 import { connectDB } from '../db/connect'
 import { EmailLog } from '../db/models/EmailLog'
-import { resendEmail } from '../services/email.service'
-import { runWelcomeEmailBatch } from '../cron/welcome-emails'
+import { lookupByEmail, lookupByPhone, MasterRecord } from '../services/master.service'
 
 export const emailsRouter = Router()
 
-function checkCronSecret(req: Request, res: Response): boolean {
-  const secret = process.env.CRON_SECRET
-  const provided =
-    req.headers['x-cron-secret'] as string ||
-    (req.headers['authorization'] as string || '').replace('Bearer ', '')
-  if (secret && provided !== secret) {
-    res.status(401).json({ error: 'Unauthorized' })
-    return false
-  }
-  return true
+// ── Shared draft builder (mirrors support.ts logic) ───────────────────────────
+
+function deliveryLabel(s: string) {
+  const v = (s || '').toLowerCase()
+  if (v.includes('deliver')) return '✅ Delivered'
+  if (v.includes('cancel'))  return '❌ Cancelled / Returned'
+  if (v.includes('transit')) return '🚚 In Transit'
+  return '📦 Not yet shipped'
 }
 
-// GET /api/emails/run-cron — manually trigger welcome email batch
-emailsRouter.get('/run-cron', async (req: Request, res: Response) => {
-  if (!checkCronSecret(req, res)) return
+function buildPreviewDraft(name: string, records: MasterRecord[]): string {
+  const first = (name || 'there').split(' ')[0]
+  if (!records.length) {
+    return [
+      `Hi ${first},`,
+      '',
+      "Thank you for reaching out to NextMile! 🏃‍♂️",
+      '',
+      "We couldn't find any order linked to your contact details. Could you please share your Order ID or the email/phone used during registration?",
+      '',
+      'Best regards,\nNextMile Support Team\nsupport@gonextmile.in | WhatsApp: +91 95352 12425',
+    ].join('\n')
+  }
+
+  const lines = [`Hi ${first},`, '', `Thank you for writing to us! 🏃‍♂️`, '']
+  if (records.length > 1) lines.push(`We can see you're registered for ${records.length} events with us:`, '')
+
+  records.forEach((r, i) => {
+    if (records.length > 1) lines.push(`**${r.product || `Order #${r.orderId}`}:**`)
+    lines.push(`📋 Order ID: #${r.orderId}`)
+    if (r.product) lines.push(`🎽 Event: ${r.product}`)
+    lines.push(`📦 Medal Status: ${deliveryLabel(r.deliveryStatus)}`)
+    if (r.awb) {
+      lines.push(`🔢 AWB: ${r.awb}`)
+      lines.push(`🔗 Track: https://ship.nimbuspost.com/shipping/tracking/${r.awb}`)
+    }
+    if (r.certLink) lines.push(`🏅 Certificate: ${r.certLink}`)
+    if (r.submissionLink) lines.push(`📎 Submission: ${r.submissionLink}`)
+    const vs = (r.verificationStatus || '').trim()
+    if (vs) lines.push(`✔️ Verification: ${vs}`)
+    if (i < records.length - 1) lines.push('')
+  })
+
+  lines.push('', 'If you have any other questions, just reply or reach us on WhatsApp.', '', 'Best regards,', 'NextMile Support Team', 'support@gonextmile.in | WhatsApp: +91 95352 12425')
+  return lines.join('\n')
+}
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+// POST /api/emails/preview — ops UI calls this to generate a draft reply
+emailsRouter.post('/preview', async (req: Request, res: Response) => {
   try {
-    const result = await runWelcomeEmailBatch()
-    res.json({ success: true, ...result })
+    const { senderEmail, senderPhone, senderName, customerMessage = '' } = req.body as {
+      senderEmail?: string
+      senderPhone?: string
+      senderName?: string
+      customerMessage?: string
+    }
+
+    if (!senderEmail && !senderPhone) {
+      res.status(400).json({ error: 'Provide senderEmail or senderPhone' })
+      return
+    }
+
+    let records: MasterRecord[] = []
+    if (senderEmail)                           records = await lookupByEmail(senderEmail)
+    if (!records.length && senderPhone)        records = await lookupByPhone(senderPhone)
+
+    const name  = senderName || records[0]?.fullName || 'there'
+    const draft = buildPreviewDraft(name, records)
+
+    res.json({ draft, found: records.length > 0, totalOrders: records.length, records })
   } catch (err) {
-    console.error('[emails/run-cron] Error:', err)
-    res.status(500).json({ error: 'Cron job failed' })
+    console.error('[emails/preview] Error:', err)
+    res.status(500).json({ error: 'Preview failed' })
   }
 })
 
-// GET /api/emails/stats — email log stats
-emailsRouter.get('/stats', async (req: Request, res: Response) => {
-  if (!checkCronSecret(req, res)) return
+// GET /api/emails/stats — email log counts
+emailsRouter.get('/stats', async (_req: Request, res: Response) => {
   try {
     await connectDB()
-    const [total, sent, failed, queued] = await Promise.all([
+    const [total, sent, failed] = await Promise.all([
       EmailLog.countDocuments(),
       EmailLog.countDocuments({ status: 'sent' }),
       EmailLog.countDocuments({ status: 'failed' }),
-      EmailLog.countDocuments({ status: 'queued' }),
     ])
-    res.json({ total, sent, failed, queued })
-  } catch (err) {
-    res.status(500).json({ error: 'Stats query failed' })
+    res.json({ total, sent, failed, queued: 0 })
+  } catch {
+    res.json({ total: 0, sent: 0, failed: 0, queued: 0 })
   }
 })
 
-// POST /api/emails/:id/resend
-emailsRouter.post('/:id/resend', async (req: Request, res: Response) => {
-  if (!checkCronSecret(req, res)) return
+// GET /api/emails/logs — recent email logs
+emailsRouter.get('/logs', async (_req: Request, res: Response) => {
   try {
-    await resendEmail(req.params.id)
-    res.json({ success: true })
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    res.status(500).json({ error: msg })
+    await connectDB()
+    const logs = await EmailLog.find().sort({ createdAt: -1 }).limit(20).lean()
+    res.json({ logs })
+  } catch {
+    res.json({ logs: [] })
   }
 })
