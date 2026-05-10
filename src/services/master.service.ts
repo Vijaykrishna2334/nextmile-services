@@ -2,20 +2,6 @@ import { getAccessToken } from '../utils/google-auth'
 
 const SPREADSHEET_ID = '1x2jqCRMBSguFjQXYdMc1SZMyGHVyZOVIt_zUZaht2TM'
 
-// Column indices in the MASTER sheet (0-based, matches CSV header)
-const COL_SOURCE          = 0
-const COL_ORDER_ID        = 1
-const COL_AWB             = 3
-const COL_FULL_NAME       = 4
-const COL_EMAIL           = 7
-const COL_PHONE           = 8
-const COL_PRODUCT         = 9
-const COL_PAYMENT_STATUS  = 12
-const COL_DELIVERY_STATUS = 13
-const COL_VERIFY_STATUS   = 18
-const COL_CERT_LINK       = 19
-const COL_SUBMISSION_LINK = 22  // "Submission Link" column W
-
 export interface MasterRecord {
   source: string
   orderId: string
@@ -31,12 +17,21 @@ export interface MasterRecord {
   submissionLink: string
 }
 
-async function fetchMasterRows(): Promise<string[][]> {
+// Finds a column index by matching header name (case-insensitive, partial match)
+function colIdx(headers: string[], ...candidates: string[]): number {
+  for (const c of candidates) {
+    const i = headers.findIndex(h => h.trim().toLowerCase().includes(c.toLowerCase()))
+    if (i >= 0) return i
+  }
+  return -1
+}
+
+async function fetchMasterRows(): Promise<{ headers: string[]; rows: string[][] }> {
   const token = await getAccessToken(
     'GOOGLE_SERVICE_ACCOUNT_JSON',
     'https://www.googleapis.com/auth/spreadsheets.readonly'
   )
-  if (!token) return []
+  if (!token) return { headers: [], rows: [] }
 
   const metaRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties`,
@@ -51,56 +46,60 @@ async function fetchMasterRows(): Promise<string[][]> {
     allTabs.find(t => t === 'MASTER') ||
     allTabs.find(t => /master/i.test(t)) || ''
 
-  if (!sheetTitle) return []
+  if (!sheetTitle) return { headers: [], rows: [] }
 
-  const range    = `${sheetTitle}!A:W`
   const sheetRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}`,
-    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(8000) }
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(sheetTitle)}`,
+    { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(10000) }
   )
   const data = await sheetRes.json() as { values?: string[][] }
-  return data.values || []
+  const allRows: string[][] = data.values || []
+  if (allRows.length === 0) return { headers: [], rows: [] }
+
+  const headers = allRows[0].map(h => h.trim())
+  return { headers, rows: allRows.slice(1) }
 }
 
 function normalizePhone(p: string): string {
   return p.replace(/\D/g, '').replace(/^91/, '').slice(-10)
 }
 
-function rowToRecord(row: string[]): MasterRecord {
+function buildRecord(row: string[], h: string[]): MasterRecord {
+  const g = (col: number) => (col >= 0 ? row[col] || '' : '')
   return {
-    source:             row[COL_SOURCE]          || '',
-    orderId:            row[COL_ORDER_ID]         || '',
-    awb:                row[COL_AWB]              || '',
-    fullName:           row[COL_FULL_NAME]        || '',
-    email:              row[COL_EMAIL]            || '',
-    phone:              row[COL_PHONE]            || '',
-    product:            row[COL_PRODUCT]          || '',
-    paymentStatus:      row[COL_PAYMENT_STATUS]   || '',
-    deliveryStatus:     row[COL_DELIVERY_STATUS]  || '',
-    verificationStatus: row[COL_VERIFY_STATUS]    || '',
-    certLink:           row[COL_CERT_LINK]        || '',
-    submissionLink:     row[COL_SUBMISSION_LINK]  || '',
+    source:             g(colIdx(h, 'source')),
+    orderId:            g(colIdx(h, 'order id', 'order_id', 'orderid')),
+    awb:                g(colIdx(h, 'awb')),
+    fullName:           g(colIdx(h, 'full name', 'fullname', 'name')),
+    email:              g(colIdx(h, 'email')),
+    phone:              g(colIdx(h, 'phone', 'mobile')),
+    product:            g(colIdx(h, 'product', 'ticket', 'event')),
+    paymentStatus:      g(colIdx(h, 'payment status', 'payment')),
+    deliveryStatus:     g(colIdx(h, 'delivery', 'shipping status')),
+    verificationStatus: g(colIdx(h, 'verification status', 'verification')),
+    certLink:           g(colIdx(h, 'certificate link', 'cert')),
+    submissionLink:     g(colIdx(h, 'submission link', 'submission')),
   }
 }
 
 export async function lookupByEmail(email: string): Promise<MasterRecord[]> {
-  const rows = await fetchMasterRows()
-  const headerIdx = rows.findIndex(r => /email/i.test(String(r[COL_EMAIL] || '')))
-  const dataStart = headerIdx >= 0 ? headerIdx + 1 : 1
+  const { headers, rows } = await fetchMasterRows()
+  if (!headers.length) return []
+  const emailCol = colIdx(headers, 'email')
+  if (emailCol < 0) return []
   const needle = email.trim().toLowerCase()
   return rows
-    .slice(dataStart)
-    .filter(r => String(r[COL_EMAIL] || '').trim().toLowerCase() === needle)
-    .map(rowToRecord)
+    .filter(r => (r[emailCol] || '').trim().toLowerCase() === needle)
+    .map(r => buildRecord(r, headers))
 }
 
 export async function lookupByPhone(phone: string): Promise<MasterRecord[]> {
-  const rows = await fetchMasterRows()
-  const headerIdx = rows.findIndex(r => /phone/i.test(String(r[COL_PHONE] || '')))
-  const dataStart = headerIdx >= 0 ? headerIdx + 1 : 1
+  const { headers, rows } = await fetchMasterRows()
+  if (!headers.length) return []
+  const phoneCol = colIdx(headers, 'phone', 'mobile')
+  if (phoneCol < 0) return []
   const needle = normalizePhone(phone)
   return rows
-    .slice(dataStart)
-    .filter(r => normalizePhone(String(r[COL_PHONE] || '')) === needle)
-    .map(rowToRecord)
+    .filter(r => normalizePhone(r[phoneCol] || '') === needle)
+    .map(r => buildRecord(r, headers))
 }
