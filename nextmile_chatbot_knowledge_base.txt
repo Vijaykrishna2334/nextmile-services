@@ -48,7 +48,7 @@ Challenge Rules:
 - Track your run using any fitness app or wearable (Strava, Google Fit, Apple Health, Nike Run Club, Garmin, or phone's built-in tracker)
 
 How to Submit:
-- Go to: https://gonextmile.in/pages/submit
+- Go to: https://tally.so/r/MevAjE
 - Upload a clear screenshot showing distance completed and the date of the run
 - Submit only ONCE after completing the full challenge
 
@@ -244,7 +244,7 @@ Challenge Rules:
 - Your ride screenshot showing distance is valid proof
 
 How to Submit:
-- Go to: https://gonextmile.in/pages/submit
+- Go to: https://tally.so/r/VLYaY6
 - Upload a clear screenshot showing your distance completed and date of the ride
 - Submit only ONCE after completing the challenge
 
@@ -352,13 +352,13 @@ CURRENT PRICES (as of May 2026):
     Buddy (2 people): ₹975 (was ₹1,198)
     Group (3 people): ₹1,399 (was ₹1,797)
     Family (4 people): ₹1,799 (was ₹2,396)
-- Conquest Ride Cycling (10KM / 25KM): ₹475 (was ₹599) — visit gonextmile.in for current pricing
+- Conquest Ride Cycling (10KM / 25KM): ₹499 (was ₹599)
 
-BUNDLE / COMBO PACKS (save vs buying separately):
-- Progress Pack (5KM Run + 10K Steps Challenge): ₹925 (was ₹1,198)
-- Endurance Pack (10K Steps + 25KM Cycling): ₹899 (was ₹1,198)
-- Performance Pack (5KM Run + 25KM Cycling): ₹899 (was ₹1,198)
-- Conquest Ride Duo Pack (2 registrations for 25KM Cycling): ₹898 (was ₹1,198)
+BUNDLE / COMBO PACKS (save vs buying separately — currently sold out, check gonextmile.in for availability):
+- Progress Pack (5KM Run + 10K Steps Challenge): ₹925 (was ₹1,198) — Sold Out
+- Endurance Pack (10K Steps + 25KM Cycling): ₹899 (was ₹1,198) — Sold Out
+- Performance Pack (5KM Run + 25KM Cycling): ₹899 (was ₹1,198) — Sold Out
+- Conquest Ride Duo Pack (2 registrations for Cycling): ₹898 (was ₹1,198) — Sold Out
 
 Note: Prices may change. Always check https://gonextmile.in/collections/active-challenges for the latest price before registering.
 
@@ -396,31 +396,33 @@ URL: https://gonextmile.in/collections/active-challenges
 
 NextMile offers combo packs that combine two challenges at a discounted price. Each pack gives you two finisher medals, two digital certificates, and the relevant prep guides.
 
-1. PROGRESS PACK – 5KM Run + 10K Steps Challenge
+NOTE: All combo packs are currently SOLD OUT. Check https://gonextmile.in/collections/active-challenges for availability updates. Individual challenges are all available.
+
+1. PROGRESS PACK – 5KM Run + 10K Steps Challenge [SOLD OUT]
    Price: ₹925 (was ₹1,198) | Save ₹273
    URL: https://gonextmile.in/products/10k-steps-momentum-run-combo
    Includes: 5KM virtual run challenge + 7-day 10,000 steps habit challenge
    You get: 2 finisher medals, 2 digital certificates, habit tracker & prep guides
    Perfect for: People getting back into fitness, busy professionals, anyone choosing consistency over intensity
 
-2. ENDURANCE PACK – 10K Steps + 25KM Cycling
+2. ENDURANCE PACK – 10K Steps + Cycling [SOLD OUT]
    Price: ₹899 (was ₹1,198) | Save ₹299
    URL: https://gonextmile.in/products/endurance-pack-10k-steps-challenge-25km-cycling
-   Includes: 7-day 10,000 steps challenge + 25KM virtual cycling challenge
+   Includes: 7-day 10,000 steps challenge + virtual cycling challenge
    You get: 2 finisher medals, 2 digital certificates, habit tracker & prep guides
    Perfect for: Cycling enthusiasts, people building endurance, fitness beginners
 
-3. PERFORMANCE PACK – 5KM Run + 25KM Cycling
+3. PERFORMANCE PACK – 5KM Run + Cycling [SOLD OUT]
    Price: ₹899 (was ₹1,198) | Save ₹299
    URL: https://gonextmile.in/products/performance-pack-5km-run-25km-cycling
-   Includes: 5KM virtual run challenge + 25KM virtual cycling challenge
+   Includes: 5KM virtual run challenge + virtual cycling challenge
    You get: 2 finisher medals, 2 digital certificates, prep guide
    Perfect for: People pushing beyond their usual routine, fitness enthusiasts building stamina
 
-4. CONQUEST RIDE DUO PACK – Cycling for 2 People (10KM / 25KM)
+4. CONQUEST RIDE DUO PACK – Cycling for 2 People [SOLD OUT]
    Price: ₹898 for 2 registrations (was ₹1,198) | Save ₹300
    URL: https://gonextmile.in/products/conquest-ride-25km-cycling-duo-pack
-   Includes: 2 registrations for the Conquest Ride cycling challenge (10KM or 25KM)
+   Includes: 2 registrations for the Conquest Ride cycling challenge
    You get: 2 finisher medals, 2 digital certificates, habit tracker
    Perfect for: Couples, friends, parent & child — your own pace, 30 days from registration
 
@@ -476,11 +478,11 @@ How to submit your proof:
 4. Submit your proof ONCE for the challenge you completed.
 
 Each challenge has its own submission link:
-- Miles for Mom: https://gonextmile.in/pages/submit
+- Miles for Mom: https://tally.so/r/MevAjE
 - Momentum Run: https://tally.so/r/MezRkk
 - Women's Run: https://tally.so/r/eqBrDQ
 - 10K Steps: https://tally.so/r/5B1ZE6
-- Conquest Ride: https://gonextmile.in/pages/submit
+- Conquest Ride (10KM / 25KM): https://tally.so/r/VLYaY6
 
 ---
 

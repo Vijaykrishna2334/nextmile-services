@@ -22,7 +22,8 @@ ACTIVE CHALLENGES:
 1. Miles for Mom – Mother's Day Run (3K / 5K / 10K)
    Window: 30 days from your registration date (NO fixed end date — event does not expire)
    URL: https://gonextmile.in/products/miles-for-mom-3k-5k-10k-run
-   Submit: https://gonextmile.in/pages/submit
+   Submit: https://tally.so/r/MevAjE
+   Price: ₹499 (was ₹599)
    Self-paced run challenge. Complete your chosen distance (3K, 5K, or 10K) anytime within 30 days of registering.
    If asked about expiry or end date: "Your Miles for Mom event is live for 30 days from when you registered — no fixed expiry."
 
@@ -50,8 +51,9 @@ ACTIVE CHALLENGES:
 5. Conquest Ride – Cycling Challenge (10KM / 25KM)
    Distances available: 10KM and 25KM
    Window: 30 days from your registration date (NO fixed end date — event does not expire)
-   URL: https://gonextmile.in/collections/active-challenges
-   Submit: https://gonextmile.in/pages/submit
+   URL: https://gonextmile.in/products/conquest-ride-25km
+   Submit: https://tally.so/r/VLYaY6
+   Price: ₹499 (was ₹599)
    Complete your chosen cycling distance (10KM or 25KM) in a single day anytime within 30 days of registering.
    You can complete it in one ride or multiple rides within the same day.
    10KM option: Complete 10KM of cycling in a single day.
