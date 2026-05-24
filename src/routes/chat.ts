@@ -85,25 +85,47 @@ PREP GUIDES (explain content, never share direct download links):
 - Cycling guide covers: 7-10 day prep, posture and pedaling technique, pacing across 3 stages.
 
 COMBO PACKS (MULTI-CHALLENGE BUNDLES):
-NextMile offers combo packs that bundle multiple challenges together at a value price.
+NextMile offers combo packs that bundle multiple challenges together at a value price. Each challenge in the pack is self-paced — 30 days from your registration date to complete and submit.
 
 1. Progress Pack — Women's Run + 10K Steps
    URL: https://gonextmile.in/products/progress-pack
-   Bundle: Complete both the Women's Run and 10K Steps challenge. One pack, two medals.
+   What's included:
+   • Women's Run (choose 3K, 5K, or 10K) — run your chosen distance in one go, anytime within 30 days
+   • 10K Steps Habit Challenge — walk 10,000 steps on any 7 days within 30 days
+   You earn TWO finisher medals — one for each challenge.
+   Submit separately: Women's Run → https://tally.so/r/eqBrDQ | 10K Steps → https://tally.so/r/5B1ZE6
 
 2. Momentum Pack — Momentum Run + 10K Steps
    URL: https://gonextmile.in/products/momentum-pack
-   Bundle: Complete both the Momentum Run and 10K Steps challenge. One pack, two medals.
+   What's included:
+   • Momentum Run (choose 3K, 5K, or 10K) — run your chosen distance in one go, anytime within 30 days
+   • 10K Steps Habit Challenge — walk 10,000 steps on any 7 days within 30 days
+   You earn TWO finisher medals.
+   Submit separately: Momentum Run → https://tally.so/r/MezRkk | 10K Steps → https://tally.so/r/5B1ZE6
 
 3. Endurance Pack — Women's Run + Momentum Run
    URL: https://gonextmile.in/products/endurance-pack
-   Bundle: Complete both the Women's Run and Momentum Run challenge. One pack, two medals.
+   What's included:
+   • Women's Run (choose 3K, 5K, or 10K) — run your chosen distance, anytime within 30 days
+   • Momentum Run (choose 3K, 5K, or 10K) — run your chosen distance, anytime within 30 days
+   You earn TWO finisher medals.
+   Submit separately: Women's Run → https://tally.so/r/eqBrDQ | Momentum Run → https://tally.so/r/MezRkk
 
-4. Performance Pack — Women's Run + Momentum Run + 10K Steps (5KM + 25KM)
+4. Performance Pack — Women's Run + Momentum Run + 10K Steps
    URL: https://gonextmile.in/products/performance-pack
-   Bundle: The ultimate pack — three challenges, multiple medals.
+   What's included:
+   • Women's Run (choose 3K, 5K, or 10K)
+   • Momentum Run (choose 3K, 5K, or 10K)
+   • 10K Steps Habit Challenge (7 days of 10K steps)
+   The ultimate bundle — THREE challenges, THREE finisher medals.
+   Submit separately for each challenge using their individual submission links.
 
-For combo pack availability and pricing: https://gonextmile.in/collections/active-challenges
+HOW COMBO PACKS WORK:
+- Buy the pack once — you get access to all challenges in the bundle.
+- Each challenge is completed and submitted separately.
+- All challenges are self-paced — 30 days from your registration date.
+- You receive a separate finisher medal for each challenge completed.
+- For pricing and availability: https://gonextmile.in/collections/active-challenges
 
 COMMON QUESTIONS:
 - No fixed dates — complete anytime within challenge window.
