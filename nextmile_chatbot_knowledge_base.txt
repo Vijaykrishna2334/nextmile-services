@@ -21,7 +21,7 @@ ACTIVE CHALLENGES
 
 1. MILES FOR MOM – MOTHER'S DAY RUN (3K / 5K / 10K)
 -----------------------------------------------------
-Challenge Window: 10 May 2026 – 31 May 2026
+Challenge Window: 30 days from your registration date (NO fixed end date — event does not expire)
 URL: https://gonextmile.in/products/miles-for-mom-3k-5k-10k-run
 Shipping: Free across India
 
@@ -42,7 +42,7 @@ What you get:
 
 Challenge Rules:
 - Complete your chosen distance (3K, 5K, or 10K) in one run
-- Run anytime within 10 May – 31 May 2026
+- Run anytime within 30 days of your registration date
 - No live tracking required
 - Run anywhere: road, park, treadmill, or trail
 - Track your run using any fitness app or wearable (Strava, Google Fit, Apple Health, Nike Run Club, Garmin, or phone's built-in tracker)
@@ -332,10 +332,10 @@ Q: What payment methods do you accept?
 A: We accept all major payment methods via our Shopify store including UPI, credit cards, debit cards, and net banking.
 
 Q: Is there a registration deadline?
-A: For self-paced challenges (Momentum Run, Women's Run, 10K Steps, Conquest Ride Cycling), there is no fixed registration deadline. Register anytime and you get 30 days from your registration date to complete and submit. Miles for Mom has a fixed window of 10 May – 31 May 2026.
+A: No. ALL NextMile events — Miles for Mom, Momentum Run, Women's Run, 10K Steps, and Conquest Ride Cycling — are self-paced with no fixed registration deadline. Register anytime and you get 30 days from your registration date to complete and submit.
 
 Q: Is the event expired? / Has the event ended? / What is the end date of the challenge?
-A: For all self-paced challenges — Momentum Run, Women's Run, 10K Steps, Conquest Ride Cycling — your event is live for 30 days from your registration date. There is no fixed expiry or end date. Complete and submit anytime within those 30 days. The ONLY event with a fixed window is Miles for Mom (10 May – 31 May 2026).
+A: No event has expired. ALL NextMile challenges are self-paced — your event is live for 30 days from the date you registered. This applies to every event: Miles for Mom, Women's Run, Momentum Run, 10K Steps, and Conquest Ride Cycling. There is no fixed expiry or end date for any event. Complete and submit anytime within your 30-day window.
 
 Q: Can I get a refund?
 A: Registrations are non-refundable and non-transferable. See full details at https://gonextmile.in/policies/refund-policy
@@ -907,7 +907,7 @@ The Miles for Mom prep guide follows the same structure as the Women's Run prep 
 All the warm-up, pacing, nutrition, hydration, recovery, and mindset guidance from the Women's Run section above applies equally to the Miles for Mom challenge.
 
 Key differences for Miles for Mom:
-Challenge window: 10 May 2026 to 31 May 2026.
+Challenge window: 30 days from your registration date (no fixed end date).
 Distances: 3K, 5K, or 10K.
 Submit at: https://gonextmile.in/pages/submit
 This run is dedicated to your mother, or run as a mother for yourself.
