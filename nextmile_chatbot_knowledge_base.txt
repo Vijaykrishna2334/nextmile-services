@@ -210,7 +210,7 @@ Tracking apps you can use: Strava, Nike Run Club, Google Fit, Apple Health, or y
 
 5. CONQUEST RIDE – CYCLING CHALLENGE (10KM / 25KM)
 ---------------------------------------------------
-URL: https://gonextmile.in/collections/active-challenges
+URL: https://gonextmile.in/products/conquest-ride-25km
 Shipping: Free across India
 
 Distances available: 10KM and 25KM
@@ -325,58 +325,139 @@ A: Yes. We accept screenshots from any fitness tracking app including Strava, Go
 COMBO PACKS — MULTI-CHALLENGE BUNDLES
 ======================================
 
-NextMile offers combo packs that bundle multiple challenges together at a value price. Each challenge in the pack follows the same 30-day self-paced rule from your registration date.
+NextMile offers combo packs that bundle multiple challenges together at a value price. Each challenge in the pack is self-paced — 30 days from your registration date. Buy once, get access to all challenges in the bundle, complete and submit each one separately, earn a medal for each.
 
-Progress Pack — Women's Run + 10K Steps
-URL: https://gonextmile.in/products/progress-pack
-What's included:
-- Women's Run: choose 3K, 5K, or 10K — run your chosen distance in one go, anytime within 30 days of registration
-- 10K Steps Habit Challenge: walk 10,000 steps on any 7 days within 30 days of registration (days don't have to be consecutive)
-You earn TWO finisher medals — one for each challenge completed.
-Submit separately: Women's Run → https://tally.so/r/eqBrDQ | 10K Steps → https://tally.so/r/5B1ZE6
+---
 
-Momentum Pack — Momentum Run + 10K Steps
-URL: https://gonextmile.in/products/momentum-pack
-What's included:
-- Momentum Run: choose 3K, 5K, or 10K — run your chosen distance in one go, anytime within 30 days of registration
-- 10K Steps Habit Challenge: walk 10,000 steps on any 7 days within 30 days of registration
-You earn TWO finisher medals.
-Submit separately: Momentum Run → https://tally.so/r/MezRkk | 10K Steps → https://tally.so/r/5B1ZE6
+1. PROGRESS PACK — 5KM Run + 10K Steps
+URL: https://gonextmile.in/products/10k-steps-momentum-run-combo
+Tag: Run + Walk Challenge
 
-Endurance Pack — Women's Run + Momentum Run
-URL: https://gonextmile.in/products/endurance-pack
 What's included:
-- Women's Run: choose 3K, 5K, or 10K — run anytime within 30 days of registration
-- Momentum Run: choose 3K, 5K, or 10K — run anytime within 30 days of registration
-You earn TWO finisher medals.
-Submit separately: Women's Run → https://tally.so/r/eqBrDQ | Momentum Run → https://tally.so/r/MezRkk
+- 5KM Momentum Run: complete a 5KM walk/run at your own pace, anytime within 30 days of registration
+- 10K Steps Habit Challenge: achieve 10,000 steps a day on any 7 days within 30 days of registration
 
-Performance Pack — Women's Run + Momentum Run + 10K Steps
-URL: https://gonextmile.in/products/performance-pack
-The ultimate bundle — THREE challenges, THREE finisher medals.
+What you get:
+- 2 finisher medals (one for each challenge, delivered after verification)
+- Personalised digital certificate
+- Habit tracker and digital prep guide
+
+Perfect for:
+- People getting back into fitness
+- Busy professionals trying to stay active
+- Anyone choosing consistency over intensity
+
+How it works:
+1. Register for the Progress Pack
+2. Complete both challenges anytime at your own pace (within 30 days)
+3. Submit your proof through the confirmation email link
+4. Receive your finisher medals and certificate
+
+Submit separately: 5KM Run → https://tally.so/r/MezRkk | 10K Steps → https://tally.so/r/5B1ZE6
+
+---
+
+2. ENDURANCE PACK — 10K Steps + 25KM Cycling
+URL: https://gonextmile.in/products/endurance-pack-10k-steps-challenge-25km-cycling
+Tag: Duo Challenge
+
 What's included:
-- Women's Run (choose 3K, 5K, or 10K)
-- Momentum Run (choose 3K, 5K, or 10K)
-- 10K Steps Habit Challenge (10,000 steps on any 7 days)
-Submit separately for each challenge using their individual submission links.
+- 10K Steps Habit Challenge: achieve 10,000 steps a day on any 7 days within 30 days of registration
+- 25KM Conquest Ride Cycling: complete 25KM of cycling within a single day, anytime within 30 days of registration
+
+What you get:
+- 2 finisher medals (one for each challenge, delivered after verification)
+- Personalised digital certificate
+- Habit tracker and digital prep guide
+
+Perfect for:
+- People looking to stay active consistently
+- Cycling enthusiasts and fitness beginners
+- Anyone building endurance one day at a time
+
+How it works:
+1. Register for the Endurance Pack
+2. Complete both challenges anytime at your own pace (within 30 days)
+3. Submit your proof through the confirmation email link
+4. Receive your finisher medals and certificate
+
+Submit separately: 10K Steps → https://tally.so/r/5B1ZE6 | 25KM Cycling → https://tally.so/r/VLYaY6
+
+---
+
+3. PERFORMANCE PACK — 5KM Run + 25KM Cycling
+URL: https://gonextmile.in/products/performance-pack-5km-run-25km-cycling
+Tag: Run + Cycle
+
+What's included:
+- 5KM Run: complete a 5KM walk/run at your own pace, anytime within 30 days of registration
+- 25KM Conquest Ride Cycling: complete 25KM of cycling within a single day, anytime within 30 days of registration
+
+What you get:
+- 2 finisher medals (one for each challenge, delivered after verification)
+- Personalised digital certificate
+- Digital prep guide and challenge support
+
+Perfect for:
+- People looking to push beyond their usual routine
+- Fitness enthusiasts building stamina and endurance
+- Anyone ready for a bigger challenge
+
+How it works:
+1. Register for the Performance Pack
+2. Complete both challenges anytime at your own pace (within 30 days)
+3. Submit your proof through the confirmation email link
+4. Receive your finisher medals and certificate
+
+Submit separately: 5KM Run → https://tally.so/r/MezRkk | 25KM Cycling → https://tally.so/r/VLYaY6
+
+---
+
+4. CONQUEST RIDE 25KM CYCLING — DUO PACK
+URL: https://gonextmile.in/products/conquest-ride-25km-cycling-duo-pack
+Tag: Duo Pack
+
+What it is:
+Two registrations for the same 25KM Conquest Ride cycling challenge. Both people complete 25KM of cycling within a single day, each at their own pace. Same challenge window, same commitment — but you do it together. No pressure to match each other's speed or finish time.
+
+What you get:
+- 2 finisher medals (one per person, delivered after verification)
+- 2 personalised digital certificates
+- Habit tracker and digital prep guide
+
+Perfect for:
+- Couples starting a fitness habit together
+- Friends who want a shared goal to show up for
+- A parent and their child taking on a first challenge
+- Anyone who does better knowing someone else is in it with them
+
+How it works:
+1. Register the Duo Pack (covers 2 people)
+2. Each person completes 25KM of cycling within a single day (within 30 days of registration)
+3. Each person submits their proof separately via the submission link
+4. Both receive their finisher medals and certificates
+
+Submit: https://tally.so/r/VLYaY6 (each person submits separately)
+
+---
 
 Q: What are combo packs?
-A: Combo packs bundle two or three NextMile challenges together at a value price. You complete each challenge separately within your 30-day window and earn a finisher medal for each. Check https://gonextmile.in/collections/active-challenges for current availability and pricing.
+A: Combo packs bundle two NextMile challenges together at a value price. You complete each challenge separately within your 30-day window and earn a finisher medal for each. Check https://gonextmile.in/collections/active-challenges for current packs and availability.
 
 Q: How do combo packs work?
 A: Buy the pack once — you get access to all challenges in the bundle. Each challenge is self-paced — complete and submit them in any order within 30 days of your registration date. You receive a separate finisher medal for each challenge you complete.
 
 Q: Tell me about the Progress Pack.
-A: The Progress Pack bundles the Women's Run and the 10K Steps Habit Challenge together. Choose your Women's Run distance (3K, 5K, or 10K), complete it anytime within 30 days. For 10K Steps, walk 10,000 steps on any 7 days within 30 days. You earn two finisher medals — one for each challenge. Buy it at https://gonextmile.in/products/progress-pack.
-
-Q: Tell me about the Momentum Pack.
-A: The Momentum Pack bundles the Momentum Run and the 10K Steps Habit Challenge. Choose your Momentum Run distance (3K, 5K, or 10K), complete it anytime within 30 days. For 10K Steps, walk 10,000 steps on any 7 days within 30 days. Two challenges, two medals. Buy it at https://gonextmile.in/products/momentum-pack.
+A: The Progress Pack bundles a 5KM run (Momentum Run) with the 10K Steps Habit Challenge. Complete the 5KM anytime within 30 days. For 10K Steps, walk 10,000 steps on any 7 days within 30 days. Two challenges, two medals. Buy it at https://gonextmile.in/products/10k-steps-momentum-run-combo.
 
 Q: Tell me about the Endurance Pack.
-A: The Endurance Pack bundles the Women's Run and the Momentum Run. Choose your distance for each (3K, 5K, or 10K) and complete both within 30 days. Two run challenges, two medals. Buy it at https://gonextmile.in/products/endurance-pack.
+A: The Endurance Pack bundles the 10K Steps Habit Challenge with a 25KM cycling challenge. Walk 10,000 steps on any 7 days, and complete 25KM of cycling in a single day — both within 30 days. Two challenges, two medals. Buy it at https://gonextmile.in/products/endurance-pack-10k-steps-challenge-25km-cycling.
 
 Q: Tell me about the Performance Pack.
-A: The Performance Pack is the ultimate bundle — Women's Run + Momentum Run + 10K Steps. Choose your distance for each run (3K, 5K, or 10K), complete the 10K Steps on any 7 days, all within 30 days. Three challenges, three medals. Buy it at https://gonextmile.in/products/performance-pack.
+A: The Performance Pack bundles a 5KM run with a 25KM cycling challenge. Complete the 5KM run and the 25KM ride anytime within 30 days. Two challenges, two medals. Built for people ready to push their limits. Buy it at https://gonextmile.in/products/performance-pack-5km-run-25km-cycling.
+
+Q: Tell me about the Conquest Ride Duo Pack.
+A: The Duo Pack is for two people taking on the 25KM cycling challenge together. You each complete 25KM of cycling in a single day at your own pace, within 30 days. Both earn a finisher medal and digital certificate. Great for couples, friends, or a parent and child. Buy it at https://gonextmile.in/products/conquest-ride-25km-cycling-duo-pack.
 
 ---
 

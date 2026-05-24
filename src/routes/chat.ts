@@ -85,47 +85,40 @@ PREP GUIDES (explain content, never share direct download links):
 - Cycling guide covers: 7-10 day prep, posture and pedaling technique, pacing across 3 stages.
 
 COMBO PACKS (MULTI-CHALLENGE BUNDLES):
-NextMile offers combo packs that bundle multiple challenges together at a value price. Each challenge in the pack is self-paced — 30 days from your registration date to complete and submit.
+NextMile offers combo packs that bundle multiple challenges together. Each challenge is self-paced — 30 days from registration. Buy once, complete each challenge separately, earn a medal for each.
 
-1. Progress Pack — Women's Run + 10K Steps
-   URL: https://gonextmile.in/products/progress-pack
-   What's included:
-   • Women's Run (choose 3K, 5K, or 10K) — run your chosen distance in one go, anytime within 30 days
-   • 10K Steps Habit Challenge — walk 10,000 steps on any 7 days within 30 days
-   You earn TWO finisher medals — one for each challenge.
-   Submit separately: Women's Run → https://tally.so/r/eqBrDQ | 10K Steps → https://tally.so/r/5B1ZE6
+1. Progress Pack — 5KM Run + 10K Steps
+   URL: https://gonextmile.in/products/10k-steps-momentum-run-combo
+   • 5KM Momentum Run: complete 5KM walk/run at your own pace within 30 days
+   • 10K Steps: walk 10,000 steps on any 7 days within 30 days
+   2 medals. Perfect for people getting back into fitness or building daily consistency.
+   Submit: 5KM Run → https://tally.so/r/MezRkk | 10K Steps → https://tally.so/r/5B1ZE6
 
-2. Momentum Pack — Momentum Run + 10K Steps
-   URL: https://gonextmile.in/products/momentum-pack
-   What's included:
-   • Momentum Run (choose 3K, 5K, or 10K) — run your chosen distance in one go, anytime within 30 days
-   • 10K Steps Habit Challenge — walk 10,000 steps on any 7 days within 30 days
-   You earn TWO finisher medals.
-   Submit separately: Momentum Run → https://tally.so/r/MezRkk | 10K Steps → https://tally.so/r/5B1ZE6
+2. Endurance Pack — 10K Steps + 25KM Cycling
+   URL: https://gonextmile.in/products/endurance-pack-10k-steps-challenge-25km-cycling
+   • 10K Steps: walk 10,000 steps on any 7 days within 30 days
+   • 25KM Conquest Ride: complete 25KM cycling in a single day within 30 days
+   2 medals. Perfect for people building endurance across walking and cycling.
+   Submit: 10K Steps → https://tally.so/r/5B1ZE6 | 25KM Cycling → https://tally.so/r/VLYaY6
 
-3. Endurance Pack — Women's Run + Momentum Run
-   URL: https://gonextmile.in/products/endurance-pack
-   What's included:
-   • Women's Run (choose 3K, 5K, or 10K) — run your chosen distance, anytime within 30 days
-   • Momentum Run (choose 3K, 5K, or 10K) — run your chosen distance, anytime within 30 days
-   You earn TWO finisher medals.
-   Submit separately: Women's Run → https://tally.so/r/eqBrDQ | Momentum Run → https://tally.so/r/MezRkk
+3. Performance Pack — 5KM Run + 25KM Cycling
+   URL: https://gonextmile.in/products/performance-pack-5km-run-25km-cycling
+   • 5KM Run: complete 5KM walk/run at your own pace within 30 days
+   • 25KM Conquest Ride: complete 25KM cycling in a single day within 30 days
+   2 medals. Built for people ready to push their limits across running and cycling.
+   Submit: 5KM Run → https://tally.so/r/MezRkk | 25KM Cycling → https://tally.so/r/VLYaY6
 
-4. Performance Pack — Women's Run + Momentum Run + 10K Steps
-   URL: https://gonextmile.in/products/performance-pack
-   What's included:
-   • Women's Run (choose 3K, 5K, or 10K)
-   • Momentum Run (choose 3K, 5K, or 10K)
-   • 10K Steps Habit Challenge (7 days of 10K steps)
-   The ultimate bundle — THREE challenges, THREE finisher medals.
-   Submit separately for each challenge using their individual submission links.
+4. Conquest Ride 25KM Cycling — Duo Pack
+   URL: https://gonextmile.in/products/conquest-ride-25km-cycling-duo-pack
+   Two people, same 25KM cycling challenge. Each completes 25KM in a single day at their own pace within 30 days of registration. Each earns their own medal and certificate.
+   2 medals, 2 certificates. Perfect for couples, friends, or a parent and child.
+   Submit: each person submits separately at https://tally.so/r/VLYaY6
 
 HOW COMBO PACKS WORK:
-- Buy the pack once — you get access to all challenges in the bundle.
-- Each challenge is completed and submitted separately.
-- All challenges are self-paced — 30 days from your registration date.
-- You receive a separate finisher medal for each challenge completed.
-- For pricing and availability: https://gonextmile.in/collections/active-challenges
+- Buy once — access to all challenges in the bundle.
+- Complete and submit each challenge separately within 30 days of registration.
+- Earn a separate finisher medal for each challenge completed.
+- For availability: https://gonextmile.in/collections/active-challenges
 
 COMMON QUESTIONS:
 - No fixed dates — complete anytime within challenge window.
