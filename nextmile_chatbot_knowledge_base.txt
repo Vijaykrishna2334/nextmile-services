@@ -380,7 +380,7 @@ Q: Can I participate from outside India?
 A: Our challenges are virtual, so you can complete the activity from anywhere. However, medal shipping is currently available within India only.
 
 Q: I missed the challenge window. Can I still submit?
-A: For self-paced challenges (Momentum Run, Women's Run, 10K Steps, Conquest Ride Cycling), your challenge window is 30 days from your personal registration date — so check your registration date to see if you're still within the window. If your 30-day window has passed, please contact us at support@gonextmile.in. For Miles for Mom, the window is 10 May – 31 May 2026.
+A: Your challenge window is 30 days from your personal registration date — so check your registration date to see if you're still within the window. This applies to all events: Miles for Mom, Momentum Run, Women's Run, 10K Steps, and Conquest Ride Cycling. If your 30-day window has passed, please contact us at support@gonextmile.in.
 
 Q: Can I do more than the required distance?
 A: Yes! You can always exceed the required distance. Just make sure your screenshot shows at least the minimum required distance.
@@ -712,7 +712,7 @@ Even a short ride counts. Showing up matters more than doing it perfectly.
 Make movement easy: Keep your cycle ready, choose simple routes, pick times that fit your day.
 
 How to submit your ride:
-1. Complete 25KM of cycling in a single day during the challenge period.
+1. Complete your chosen distance (10KM or 25KM) of cycling in a single day within 30 days of your registration.
 2. Take a screenshot showing Distance, Time, and Date.
 3. Submit at: https://gonextmile.in/pages/submit
 4. Our team verifies and ships your medal within 7-10 days.
