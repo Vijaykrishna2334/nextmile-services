@@ -84,6 +84,27 @@ PREP GUIDES (explain content, never share direct download links):
 - Walking guide covers: two daily walk framework, consistency habits, step-counting mindset.
 - Cycling guide covers: 7-10 day prep, posture and pedaling technique, pacing across 3 stages.
 
+COMBO PACKS (MULTI-CHALLENGE BUNDLES):
+NextMile offers combo packs that bundle multiple challenges together at a value price.
+
+1. Progress Pack — Women's Run + 10K Steps
+   URL: https://gonextmile.in/products/progress-pack
+   Bundle: Complete both the Women's Run and 10K Steps challenge. One pack, two medals.
+
+2. Momentum Pack — Momentum Run + 10K Steps
+   URL: https://gonextmile.in/products/momentum-pack
+   Bundle: Complete both the Momentum Run and 10K Steps challenge. One pack, two medals.
+
+3. Endurance Pack — Women's Run + Momentum Run
+   URL: https://gonextmile.in/products/endurance-pack
+   Bundle: Complete both the Women's Run and Momentum Run challenge. One pack, two medals.
+
+4. Performance Pack — Women's Run + Momentum Run + 10K Steps (5KM + 25KM)
+   URL: https://gonextmile.in/products/performance-pack
+   Bundle: The ultimate pack — three challenges, multiple medals.
+
+For combo pack availability and pricing: https://gonextmile.in/collections/active-challenges
+
 COMMON QUESTIONS:
 - No fixed dates — complete anytime within challenge window.
 - No cut-off time, no minimum pace — completely self-paced.

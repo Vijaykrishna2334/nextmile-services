@@ -322,6 +322,35 @@ A: Yes. We accept screenshots from any fitness tracking app including Strava, Go
 
 ---
 
+COMBO PACKS — MULTI-CHALLENGE BUNDLES
+======================================
+
+NextMile offers combo packs that bundle multiple challenges together at a value price. Each challenge in the pack follows the same 30-day self-paced rule from your registration date.
+
+Progress Pack — Women's Run + 10K Steps
+URL: https://gonextmile.in/products/progress-pack
+Bundle includes: Women's Run + 10K Steps Habit Challenge. One pack, two finisher medals.
+
+Momentum Pack — Momentum Run + 10K Steps
+URL: https://gonextmile.in/products/momentum-pack
+Bundle includes: Momentum Run + 10K Steps Habit Challenge. One pack, two finisher medals.
+
+Endurance Pack — Women's Run + Momentum Run
+URL: https://gonextmile.in/products/endurance-pack
+Bundle includes: Women's Run + Momentum Run. One pack, two finisher medals.
+
+Performance Pack — Women's Run + Momentum Run + 10K Steps
+URL: https://gonextmile.in/products/performance-pack
+The ultimate bundle: three challenges, multiple finisher medals.
+
+Q: What are combo packs?
+A: Combo packs bundle two or three NextMile challenges together. You complete each challenge separately within your 30-day window and earn a medal for each. Check https://gonextmile.in/collections/active-challenges for current availability and pricing.
+
+Q: How do combo packs work?
+A: When you buy a combo pack, you get access to all challenges in the bundle. Each challenge is self-paced — complete them in any order within 30 days of your registration date. Submit separately for each challenge using the respective submission links.
+
+---
+
 REGISTRATION AND PAYMENT
 =========================
 
