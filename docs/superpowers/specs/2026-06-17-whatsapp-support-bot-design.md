@@ -83,12 +83,35 @@ Template names for marketing features will be configured via env vars at activat
 - `src/routes/marketing.ts` — protected endpoints behind the same ops-page auth: `POST /api/marketing/new-event-broadcast` (kicks off a broadcast to a segment), `POST /api/marketing/abandoned-cart-sweep`, `POST /api/marketing/winback-sweep`. Each requires its own env flag AND an explicit operator action — never auto-fires on a schedule.
 - `public/ops/marketing.html` — page in the ops area where the operator can pick a segment + template, preview the count, and click Send. (Built but reachable only when at least one marketing flag is on.)
 
-## Auth for the Review Page
+## Auth and Access Control
 
-No session/auth library exists in this codebase yet. To stay minimal (no new dependencies):
-- A single `ADMIN_PASSWORD` environment variable.
-- A login form posts the password to a new endpoint; on success, the server sets a signed cookie (HMAC over a payload + expiry, using Node's built-in `crypto` — no new packages).
-- Middleware on all `/api/whatsapp-review/*` routes checks that cookie before allowing access.
+A single shared auth layer protects every internal-only surface (WhatsApp review page, marketing page, the existing standalone chat test page). No new auth libraries — uses Node's built-in `crypto`.
+
+**Credentials (env vars, single operator only):**
+- `ADMIN_EMAIL` — your email.
+- `ADMIN_PASSWORD` — your password.
+- `SESSION_SECRET` — random string used to sign cookies. Rotating this instantly invalidates all sessions across all devices (the "lost laptop" kill switch).
+
+**Login flow:**
+- `GET /ops/login` — login form (email + password).
+- `POST /api/ops/login` — checks credentials, on success sets HttpOnly + Secure + SameSite=Strict signed cookie (`ops-session`, 7-day expiry, HMAC-SHA256 over `{email, expiry}` with `SESSION_SECRET`).
+- `POST /api/ops/logout` — clears the cookie.
+- Failed login → fixed 1.5s delay (basic brute-force slowdown) + log the attempt to a `LoginAttempt` model with IP and timestamp. No lockout in v1 since there's only one valid email.
+
+**Middleware (`requireOpsAuth`):**
+- Reads `ops-session` cookie, verifies HMAC, checks expiry.
+- Applied to: all `/api/ops/*` routes, the static files under `public/ops/*`, and the existing standalone chat test page at `/` on `api.gonextmile.live`.
+- On failure → redirect to `/ops/login` (for HTML routes) or 401 JSON (for API routes).
+
+## Chat Bot Cost Protection (CORS + origin lock)
+
+The chat backend at `POST /api/chat` is currently open to any origin (`origin: '*'` per the existing CORS config — necessary because Shopify storefronts call it). Even with the standalone test page now login-protected, anyone who copies the widget's fetch call from the storefront could still burn LLM tokens from outside. Add a strict origin allowlist on `/api/chat` only:
+
+- Allow: `https://gonextmile.in`, `https://www.gonextmile.in`, `http://localhost:*` (dev).
+- Reject everything else with 403 before any Discovery Engine call is made.
+- Origin enforcement on `/api/chat` only — does not change CORS on `/api/strava/webhook`, `/api/whatsapp/webhook`, or other server-to-server endpoints (those use signature verification instead).
+
+Combined with the login gate on the standalone test page, this means: real customers on `gonextmile.in` keep working; you can still test via the real widget on the storefront; nobody else can call the chat backend at all.
 
 ## Error Handling
 
