@@ -62,8 +62,42 @@ No session/auth library exists in this codebase yet. To stay minimal (no new dep
 - Since real WhatsApp messages can't be triggered on demand, support POSTing a fake `message_received` payload directly to `/api/whatsapp/webhook` (matching Interakt's documented shape) to exercise classification, auto-reply, and flagging logic end-to-end without a live customer message.
 - Manually verify: a generic-FAQ message triggers an auto-sent reply; an order-specific message (for a phone number with existing order records) gets flagged with no auto-send; a sensitive-topic message gets flagged with no auto-send; an invalid signature gets rejected.
 
+## Confirmed Interakt API Endpoints
+
+Verified directly from Interakt's Postman documentation (`https://documenter.getpostman.com/view/14760594/2sA2r7zibM`), all use `Authorization: Basic {{API_KEY}}` and `Content-Type: application/json`:
+
+**Send Text Message**
+```
+POST https://api.interakt.ai/v1/public/message/
+{
+  "userId": "",
+  "fullPhoneNumber": "919999999999",
+  "callbackData": "some_callback_data",
+  "type": "Text",
+  "data": { "message": "your reply text" }
+}
+```
+Success: `201 CREATED`, `{ "result": true, "message": "Message queued for sending via Interakt. Check webhook for delivery status", "id": "..." }`
+
+**Chat Assignment**
+```
+POST https://api.interakt.ai/v1/public/assignment/
+{
+  "user_phone_number": "919876543210",
+  "agent_email": "agent@example.com"
+}
+```
+Success: `{ "result": true, "message": "Chat Assigned Successfully" }`
+
+**Get User via Phone Number** (optional — Interakt's own customer record, separate from our Google Sheet order data)
+```
+GET https://api.interakt.ai/v1/public/apis/users/phone_number/9999999999
+```
+(phone number without country code)
+
 ## Open Items Resolved During Design
 
 - Interakt plan confirmed as Growth — API/webhook access available.
 - No confirmed private-note API in Interakt — review surface is a custom internal page instead.
 - Sensitive/liability topics (age, injury, legal, discounts) are treated as a third "needs human" bucket, not lumped into "order-specific," and not auto-sent even though they don't require an order lookup.
+- Chat Assignment API confirmed and brought back into v1 scope (previously deferred as unconfirmed).
