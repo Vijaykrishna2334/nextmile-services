@@ -301,9 +301,10 @@ Each person gets their own finisher medal and digital certificate. Check the eve
 
 How to Submit:
 - Go to: https://tally.so/r/Gx54PO
-- Upload screenshot(s) clearly showing your CUMULATIVE distance reaching at least 100 KM, along with the activity dates
-- Multiple screenshots are allowed if needed to show the running total
-- Submit ONLY ONCE — after you've reached the full 100 KM, not before, and not in daily/partial installments
+- Upload screenshot(s) showing EVERY individual activity session with its own date and distance — like an activity log/feed, not a single aggregated number
+- A weekly or monthly summary screenshot (e.g. "Total this month: 100KM") is NOT accepted — each day's session and its date must be clearly visible
+- Use multiple screenshots if needed to show every session across your 30 days
+- Submit ONLY ONCE — after you've reached the full 100 KM, not before, and never as a daily, weekly, or monthly summary submission
 
 After Submission:
 - Our team will verify your submission
@@ -316,6 +317,9 @@ Prep Guide: https://drive.google.com/file/d/1cpPDh_weJ1Gu59SZl5KrNowBsRBWk1e8/vi
 
 Q: Do I submit my 100km progress day by day, or all at once at the end?
 A: All at once, at the end. The 100KM Challenge takes ONE cumulative submission — never daily or partial submissions. Keep tracking your activity day by day with your fitness app as you go, but only submit your screenshot(s) to https://tally.so/r/Gx54PO after your running total has reached the full 100 KM. Submitting partial totals (like a 30KM update) will not be accepted.
+
+Q: Can I submit a weekly or monthly summary screenshot for the 100KM Challenge instead of each day's activity?
+A: No. A weekly or monthly aggregated summary (e.g. a single app screen showing "Total this month: 100KM") is NOT accepted. Your screenshot(s) must show EVERY individual activity session with its own distance and date — like the app's activity log/feed, not just a rolled-up total. Use multiple screenshots if needed to show every session clearly. Submissions without visible per-day dates will not be counted.
 
 Q: Is the 100KM Challenge the same as a single run or ride?
 A: No — unlike Momentum Run or Conquest Ride (which are completed in one session), the 100KM Challenge is cumulative across your whole 30-day window. You build up to 100 KM through many sessions of running, walking, jogging, or cycling, then submit one final summary once you've crossed the full 100 KM.
@@ -1314,8 +1318,8 @@ The goal is cumulative distance, not a single hard effort. Spread it across your
 
 How to submit your 100KM:
 1. Track each session (run, walk, jog, or ride) with any fitness app as you go.
-2. Once your cumulative total reaches at least 100 KM, take screenshot(s) clearly showing the cumulative distance and activity dates.
-3. Submit at: https://tally.so/r/Gx54PO — ONE final submission only, after reaching the full 100 KM. Do not submit partial or day-by-day totals.
+2. Once your cumulative total reaches at least 100 KM, take screenshot(s) showing EVERY individual session with its own date and distance — like your app's activity log/feed. Do NOT submit a single weekly/monthly summary total; each day's session and date must be visible. Use multiple screenshots if needed.
+3. Submit at: https://tally.so/r/Gx54PO — ONE final submission only, after reaching the full 100 KM. Do not submit partial, day-by-day, or summarized totals.
 4. Our team verifies and ships your medal within 7-10 days.
 Accepted apps: Strava, Google Fit, Apple Health, Nike Run Club.
 
