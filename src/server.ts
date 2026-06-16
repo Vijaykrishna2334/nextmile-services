@@ -11,6 +11,7 @@ import { whatsappRouter } from './routes/whatsapp'
 import { whatsappReviewRouter } from './routes/whatsapp-review'
 import { chatOriginLock } from './utils/origin-lock'
 import { startCronJobs } from './cron/email-drafts'
+import { startWhatsAppPoll } from './cron/whatsapp-poll'
 import { connectDB } from './db/connect'
 
 config()
@@ -75,6 +76,7 @@ async function main() {
   }
 
   startCronJobs()
+  startWhatsAppPoll()
 
   app.listen(PORT, () => console.log(`[server] Running on port ${PORT}`))
 }

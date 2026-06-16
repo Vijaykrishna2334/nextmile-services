@@ -19,7 +19,8 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast, Toaster } from 'sonner'
-import { LogOut, MessageSquare, AlertCircle, CheckCircle2, Clock, Copy, RefreshCw } from 'lucide-react'
+import { LogOut, MessageSquare, AlertCircle, CheckCircle2, Clock, Copy, RefreshCw, Inbox, Sparkles, X } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 const CONFIG = {
   apiBase: import.meta.env.VITE_API_BASE || 'https://api.gonextmile.live',
@@ -292,6 +293,199 @@ function WhatsAppReview({ token }: { token: string }) {
   )
 }
 
+interface ActivityItem {
+  _id: string
+  fullPhone: string
+  customerName: string
+  interaktModifiedAt: string
+  orderRecordsSnapshot: Array<Record<string, unknown>>
+  tagNames: string[]
+  status: 'new' | 'reviewed' | 'replied' | 'ignored'
+  pastedMessage: string
+  generatedReply: string
+  generatedAt: string | null
+  classification: string
+  ownerPingSent: boolean
+  createdAt: string
+}
+
+function InboxAlerts({ token }: { token: string }) {
+  const [items, setItems]     = useState<ActivityItem[]>([])
+  const [view, setView]       = useState<'new' | 'all'>('new')
+  const [loading, setLoading] = useState(true)
+  const [openId, setOpenId]   = useState<string | null>(null)
+  const [pasted, setPasted]   = useState<Record<string, string>>({})
+  const [generating, setGenerating] = useState<string | null>(null)
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const data = await api<{ items: ActivityItem[] }>(`/api/ops/whatsapp/inbox/${view}`, { token })
+      setItems(data.items)
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to load inbox') }
+    finally { setLoading(false) }
+  }
+  useEffect(() => { load() }, [view])
+
+  // Auto-refresh every 30s to catch new pings
+  useEffect(() => {
+    const t = setInterval(load, 30000)
+    return () => clearInterval(t)
+  }, [view])
+
+  const generate = async (a: ActivityItem) => {
+    const msg = (pasted[a._id] || '').trim()
+    if (!msg) { toast.error('Paste the customer\'s message first'); return }
+    setGenerating(a._id)
+    try {
+      const data = await api<{ reply: string; classification: string }>('/api/ops/whatsapp/inbox/generate-reply', {
+        method: 'POST', token,
+        body: { phone: a.fullPhone, message: msg, activityId: a._id }
+      })
+      setItems(prev => prev.map(x => x._id === a._id ? { ...x, generatedReply: data.reply, pastedMessage: msg, classification: data.classification, status: 'reviewed' } : x))
+      if (data.reply) toast.success('Reply generated')
+      else            toast.error('No reply could be generated')
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }
+    finally { setGenerating(null) }
+  }
+
+  const markReplied = async (id: string) => {
+    try {
+      await api(`/api/ops/whatsapp/inbox/${id}/mark-replied`, { method: 'POST', token })
+      toast.success('Marked replied')
+      setItems(prev => prev.filter(x => x._id !== id))
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }
+  }
+
+  const ignore = async (id: string) => {
+    try {
+      await api(`/api/ops/whatsapp/inbox/${id}/ignore`, { method: 'POST', token })
+      toast.success('Ignored')
+      setItems(prev => prev.filter(x => x._id !== id))
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }
+  }
+
+  const copyText = (text: string) => { navigator.clipboard.writeText(text); toast.success('Copied to clipboard') }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Tabs value={view} onValueChange={(v) => setView(v as 'new' | 'all')}>
+          <TabsList className="bg-slate-900 border border-slate-800">
+            <TabsTrigger value="new" className="data-[state=active]:bg-slate-800">New pings</TabsTrigger>
+            <TabsTrigger value="all" className="data-[state=active]:bg-slate-800">All recent</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}/> Refresh
+        </Button>
+      </div>
+
+      {items.length === 0 && !loading && (
+        <Card className="bg-slate-900/70 border-slate-800">
+          <CardContent className="p-8 text-center text-slate-400">
+            {view === 'new' ? "No new pings 🎉 You're all caught up." : 'No recent activity yet.'}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-3">
+        {items.map(a => {
+          const isOpen = openId === a._id
+          return (
+            <Card key={a._id} className="bg-slate-900/70 backdrop-blur border-slate-800 hover:border-slate-700 transition-colors">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <p className="font-semibold text-slate-100">{a.customerName || 'Unknown'}</p>
+                      <span className="text-xs text-slate-500 font-mono">{a.fullPhone}</span>
+                      {a.tagNames?.slice(0, 3).map(t => (
+                        <Badge key={t} variant="outline" className="bg-slate-700/40 text-slate-300 border-slate-600 text-xs">{t}</Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-500">Activity at {new Date(a.interaktModifiedAt).toLocaleString()}</p>
+                  </div>
+                  <Badge variant="outline" className={
+                    a.status === 'new'     ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                    a.status === 'reviewed' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' :
+                    a.status === 'replied' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                    'bg-slate-500/20 text-slate-300 border-slate-500/30'
+                  }>{a.status}</Badge>
+                </div>
+
+                {a.orderRecordsSnapshot && a.orderRecordsSnapshot.length > 0 && (
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Order(s) on file</p>
+                    <div className="space-y-1">
+                      {a.orderRecordsSnapshot.map((o, i) => (
+                        <div key={i} className="text-xs bg-slate-800/40 rounded-lg p-2 font-mono text-slate-300">
+                          {[o.orderId, o.product, o.deliveryStatus, o.awb].filter(Boolean).join(' · ')}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!isOpen && (
+                  <Button variant="outline" onClick={() => setOpenId(a._id)} className="w-full border-slate-700 text-slate-200 hover:bg-slate-800">
+                    <Sparkles className="w-4 h-4 mr-2"/> Generate AI reply
+                  </Button>
+                )}
+
+                {isOpen && (
+                  <div className="space-y-3 border-t border-slate-800 pt-4">
+                    <div>
+                      <Label htmlFor={`paste-${a._id}`} className="text-slate-300">
+                        Paste customer's WhatsApp message
+                      </Label>
+                      <Textarea
+                        id={`paste-${a._id}`}
+                        value={pasted[a._id] || a.pastedMessage || ''}
+                        onChange={e => setPasted(prev => ({ ...prev, [a._id]: e.target.value }))}
+                        placeholder="Paste what they wrote in WhatsApp..."
+                        className="mt-1 bg-slate-800/50 border-slate-700 text-slate-100 min-h-[80px]"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => generate(a)} disabled={generating === a._id}
+                        className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700">
+                        <Sparkles className="w-4 h-4 mr-2"/>
+                        {generating === a._id ? 'Generating…' : 'Generate reply'}
+                      </Button>
+                      <Button variant="ghost" onClick={() => setOpenId(null)} className="text-slate-400">
+                        <X className="w-4 h-4 mr-2"/> Cancel
+                      </Button>
+                    </div>
+
+                    {a.generatedReply && (
+                      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 text-sm text-slate-200 flex items-start justify-between gap-3">
+                        <p className="flex-1 whitespace-pre-wrap">{a.generatedReply}</p>
+                        <Button size="sm" variant="ghost" onClick={() => copyText(a.generatedReply)} className="text-indigo-300 hover:bg-indigo-500/10">
+                          <Copy className="w-4 h-4"/>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                  <Button variant="ghost" size="sm" onClick={() => ignore(a._id)} className="text-slate-400 hover:bg-slate-800">
+                    Ignore
+                  </Button>
+                  <Button size="sm" onClick={() => markReplied(a._id)} className="bg-emerald-600 hover:bg-emerald-700">
+                    <CheckCircle2 className="w-4 h-4 mr-2"/> Mark replied
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   const [token, setToken] = useAuthToken()
   const [me, setMe] = useState<string | null>(null)
@@ -323,11 +517,13 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs defaultValue="dashboard" className="space-y-6">
+        <Tabs defaultValue="inbox" className="space-y-6">
           <TabsList className="bg-slate-900 border border-slate-800">
+            <TabsTrigger value="inbox"     className="data-[state=active]:bg-slate-800"><Inbox className="w-4 h-4 mr-2"/>Inbox Alerts</TabsTrigger>
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-slate-800">Dashboard</TabsTrigger>
-            <TabsTrigger value="whatsapp"  className="data-[state=active]:bg-slate-800">WhatsApp Review</TabsTrigger>
+            <TabsTrigger value="whatsapp"  className="data-[state=active]:bg-slate-800">Auto-replies log</TabsTrigger>
           </TabsList>
+          <TabsContent value="inbox"><InboxAlerts token={token}/></TabsContent>
           <TabsContent value="dashboard"><Dashboard token={token}/></TabsContent>
           <TabsContent value="whatsapp"><WhatsAppReview token={token}/></TabsContent>
         </Tabs>

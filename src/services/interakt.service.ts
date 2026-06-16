@@ -112,3 +112,50 @@ export async function sendTemplate(_fullPhone: string, _templateName: string, _v
   }
   return { ok: false, error: 'sendTemplate not implemented in slice 1' }
 }
+
+export interface InteraktCustomer {
+  id: string
+  phone_number: string
+  country_code: string
+  channel_phone_number?: string
+  created_at_utc: string
+  modified_at_utc: string
+  traits?: Record<string, unknown>
+  tags?: string[]
+  tag_names?: string[]
+}
+
+// Returns users whose modified_at_utc is greater than the given ISO timestamp.
+// Used by the smart-polling job to detect any recent activity (incl. inbound messages).
+export async function getUsersModifiedSince(sinceIsoUtc: string, limit = 50): Promise<InteraktCustomer[]> {
+  try {
+    const res = await fetch(`${BASE}/apis/users/?offset=0&limit=${limit}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: authHeader() },
+      body: JSON.stringify({
+        filters: [{ trait: 'modified_at_utc', op: 'gt', val: sinceIsoUtc }],
+      }),
+      signal: AbortSignal.timeout(10000),
+    })
+    const data = await res.json() as { result?: boolean; data?: { customers?: InteraktCustomer[] } }
+    if (!data?.result) return []
+    return data?.data?.customers || []
+  } catch {
+    return []
+  }
+}
+
+export async function getUserByPhone(rawPhoneWithoutCountry: string): Promise<InteraktCustomer | null> {
+  try {
+    const res = await fetch(`${BASE}/apis/users/phone_number/${encodeURIComponent(rawPhoneWithoutCountry)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: authHeader() },
+      signal: AbortSignal.timeout(8000),
+    })
+    const data = await res.json() as { result?: boolean; data?: { customers?: InteraktCustomer[] } }
+    if (!data?.result) return null
+    return data?.data?.customers?.[0] || null
+  } catch {
+    return null
+  }
+}
