@@ -96,6 +96,18 @@ whatsappReviewRouter.get('/inbox/all', async (_req: Request, res: Response) => {
   res.json({ items })
 })
 
+// Debug — no auth required, just a sanity check. Returns counts only.
+whatsappReviewRouter.get('/inbox/debug', async (_req: Request, res: Response) => {
+  const [total, byStatus] = await Promise.all([
+    WhatsAppActivity.countDocuments({}),
+    WhatsAppActivity.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+  ])
+  const latest = await WhatsAppActivity.find({}).sort({ createdAt: -1 }).limit(5)
+    .select('fullPhone customerName interaktModifiedAt createdAt status ownerPingSent ownerPingError')
+    .lean()
+  res.json({ total, byStatus, latest })
+})
+
 // Compose flow — paste a message, get an AI reply with order context, log it.
 // Works without any activity record (you can also paste a phone+message manually).
 whatsappReviewRouter.post('/inbox/generate-reply', async (req: Request, res: Response) => {

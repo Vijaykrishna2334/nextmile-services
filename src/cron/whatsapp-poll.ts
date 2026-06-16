@@ -16,9 +16,15 @@ async function pollOnce(): Promise<void> {
   if (running) return
   running = true
   try {
-    if (!process.env.INTERAKT_API_KEY) return
+    if (!process.env.INTERAKT_API_KEY) {
+      console.warn('[whatsapp-poll] tick: INTERAKT_API_KEY missing, skipping')
+      return
+    }
     const since = new Date(Date.now() - LOOKBACK_SECONDS * 1000).toISOString()
     const customers = await getUsersModifiedSince(since, POLL_LIMIT)
+    if (process.env.WHATSAPP_POLL_VERBOSE === 'true') {
+      console.log(`[whatsapp-poll] tick: since=${since} found=${customers.length}`)
+    }
     if (!customers.length) return
 
     for (const c of customers) {
@@ -40,7 +46,13 @@ async function handleActivity(c: InteraktCustomer): Promise<void> {
 
   // Dedup — same (phone, modifiedAt) means we've already alerted for this update
   const existing = await WhatsAppActivity.findOne({ fullPhone, interaktModifiedAt: modifiedAt }).lean()
-  if (existing) return
+  if (existing) {
+    if (process.env.WHATSAPP_POLL_VERBOSE === 'true') {
+      console.log(`[whatsapp-poll] dedup skip: ${fullPhone} modifiedAt=${modifiedAt.toISOString()}`)
+    }
+    return
+  }
+  console.log(`[whatsapp-poll] new activity: ${fullPhone} (${c.traits?.name || 'unknown'}) modifiedAt=${modifiedAt.toISOString()}`)
 
   // Filter out activity that is clearly just our own outbound (e.g. trait pushes,
   // tag changes triggered by the cron itself). For Slice 1 we only filter
@@ -61,6 +73,8 @@ async function handleActivity(c: InteraktCustomer): Promise<void> {
   if (process.env.OWNER_WHATSAPP) {
     sendResult = await sendTextMessage(process.env.OWNER_WHATSAPP, ping)
   }
+
+  console.log(`[whatsapp-poll] owner ping result: ok=${sendResult.ok} ${sendResult.error || ''}`)
 
   await WhatsAppActivity.create({
     fullPhone,
