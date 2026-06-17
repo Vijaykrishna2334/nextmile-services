@@ -110,3 +110,78 @@ export async function lookupByPhone(phone: string): Promise<MasterRecord[]> {
     .map(r => buildRecord(r, headers))
     .filter(isValidOrder)
 }
+
+export interface EventStat {
+  product: string
+  orders: number          // total order rows for this product
+  uniqueCustomers: number // distinct phone numbers
+}
+
+export interface Registrant {
+  name: string
+  phone: string           // 10-digit, no country code
+  email: string
+  orderId: string
+  product: string
+  paymentStatus: string
+}
+
+export interface RegistrationAnalytics {
+  totalRows: number
+  totalValidOrders: number
+  uniqueCustomers: number
+  byEvent: EventStat[]
+  // Registrants matching a 100KM-style event, deduped by phone — campaign-ready
+  km100Registrants: Registrant[]
+}
+
+const KM100_PATTERN = /100\s*km|100km|nextman|100x|hundred\s*km/i
+
+export async function getRegistrationAnalytics(): Promise<RegistrationAnalytics> {
+  const { headers, rows } = await fetchMasterRows()
+  if (!headers.length) {
+    return { totalRows: 0, totalValidOrders: 0, uniqueCustomers: 0, byEvent: [], km100Registrants: [] }
+  }
+
+  const records = rows.map(r => buildRecord(r, headers)).filter(isValidOrder)
+
+  // Group by product
+  const eventMap = new Map<string, { orders: number; phones: Set<string> }>()
+  const allPhones = new Set<string>()
+  const km100ByPhone = new Map<string, Registrant>()
+
+  for (const rec of records) {
+    const product = rec.product.trim() || '(unknown)'
+    const phoneKey = normalizePhone(rec.phone) || rec.email.trim().toLowerCase() || rec.orderId
+
+    const entry = eventMap.get(product) || { orders: 0, phones: new Set<string>() }
+    entry.orders += 1
+    if (phoneKey) entry.phones.add(phoneKey)
+    eventMap.set(product, entry)
+
+    if (phoneKey) allPhones.add(phoneKey)
+
+    if (KM100_PATTERN.test(product) && phoneKey && !km100ByPhone.has(phoneKey)) {
+      km100ByPhone.set(phoneKey, {
+        name: rec.fullName,
+        phone: normalizePhone(rec.phone),
+        email: rec.email,
+        orderId: rec.orderId,
+        product: rec.product,
+        paymentStatus: rec.paymentStatus,
+      })
+    }
+  }
+
+  const byEvent: EventStat[] = Array.from(eventMap.entries())
+    .map(([product, v]) => ({ product, orders: v.orders, uniqueCustomers: v.phones.size }))
+    .sort((a, b) => b.orders - a.orders)
+
+  return {
+    totalRows: rows.length,
+    totalValidOrders: records.length,
+    uniqueCustomers: allPhones.size,
+    byEvent,
+    km100Registrants: Array.from(km100ByPhone.values()),
+  }
+}
