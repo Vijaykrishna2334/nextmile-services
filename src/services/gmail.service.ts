@@ -102,6 +102,33 @@ export async function createDraft(token: string, opts: {
   return data.id
 }
 
+// Send a standalone email (not a draft, not a reply) — used for customer OTP login.
+export async function sendEmail(to: string, subject: string, htmlBody: string): Promise<boolean> {
+  const token = await getGmailToken()
+  if (!token) return false
+  const lines = [
+    `From: NextMile <${process.env.GMAIL_USER}>`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=UTF-8',
+    '',
+    htmlBody,
+  ]
+  const raw = Buffer.from(lines.join('\r\n')).toString('base64url')
+  try {
+    const res  = await fetch(`${BASE}/messages/send`, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ raw }),
+    })
+    const data = await res.json() as { id?: string }
+    return !!data.id
+  } catch {
+    return false
+  }
+}
+
 export async function markEmailRead(token: string, messageId: string): Promise<void> {
   await fetch(`${BASE}/messages/${messageId}/modify`, {
     method:  'POST',

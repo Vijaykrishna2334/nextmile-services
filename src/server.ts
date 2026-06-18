@@ -10,6 +10,8 @@ import { opsAuthRouter } from './routes/ops-auth'
 import { whatsappRouter } from './routes/whatsapp'
 import { whatsappReviewRouter } from './routes/whatsapp-review'
 import { analyticsRouter } from './routes/analytics'
+import { adminRouter } from './routes/admin'
+import { portalRouter } from './routes/portal'
 import { chatOriginLock } from './utils/origin-lock'
 import { startCronJobs } from './cron/email-drafts'
 import { startWhatsAppPoll } from './cron/whatsapp-poll'
@@ -68,6 +70,8 @@ app.use('/api/ops',              opsAuthRouter)
 app.use('/api/whatsapp',         whatsappRouter)
 app.use('/api/ops/whatsapp',     whatsappReviewRouter)
 app.use('/api/ops/analytics',    analyticsRouter)
+app.use('/api/ops/admin',        adminRouter)
+app.use('/api/portal',           portalRouter)
 
 async function main() {
   try {
