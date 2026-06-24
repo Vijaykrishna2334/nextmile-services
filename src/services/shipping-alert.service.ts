@@ -19,6 +19,9 @@ const TRANSIT_STUCK_DAYS  = 5
 const DELIVERY_STUCK_DAYS = 2
 const NOT_PICKED_DAYS     = 1
 
+// Only alert on shipments updated within the last N days — ignore old/stale records
+const MAX_STALENESS_DAYS = 20
+
 // Re-alert cooldown — don't send same alert for same AWB within 24 hours
 const ALERT_COOLDOWN_HOURS = 24
 
@@ -129,7 +132,7 @@ interface AlertRow extends ShipRow { alertType: AlertType }
 
 function detectAlerts(rows: ShipRow[]): AlertRow[] {
   const alerts: AlertRow[] = []
-  const now = new Date()
+  const seen   = new Set<string>() // dedupe same AWB+type within the sheet
 
   for (const row of rows) {
     if (!row.status) continue
@@ -143,6 +146,14 @@ function detectAlerts(rows: ShipRow[]): AlertRow[] {
 
     const lastUpdate = parseDate(row.updated)
     const ageDays    = lastUpdate ? daysSince(lastUpdate) : null
+
+    // Skip stale records — only alert on shipments updated within past MAX_STALENESS_DAYS
+    // If no date at all, include (assume recent)
+    if (ageDays !== null && ageDays > MAX_STALENESS_DAYS) continue
+
+    const dedupeKey = `${row.awb}::${type}`
+    if (seen.has(dedupeKey)) continue
+    seen.add(dedupeKey)
 
     if (type === 'exception') {
       alerts.push({ ...row, alertType: 'exception' })
