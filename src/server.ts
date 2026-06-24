@@ -16,6 +16,7 @@ import { chatOriginLock } from './utils/origin-lock'
 import { startCronJobs } from './cron/email-drafts'
 import { startWhatsAppPoll } from './cron/whatsapp-poll'
 import { startShippingAlertCron } from './cron/shipping-alerts'
+import { startAnalyticsCron }    from './cron/analytics-reports'
 import { connectDB } from './db/connect'
 
 config()
@@ -85,6 +86,7 @@ async function main() {
   startCronJobs()
   startWhatsAppPoll()
   startShippingAlertCron()
+  startAnalyticsCron()
 
   app.listen(PORT, () => console.log(`[server] Running on port ${PORT}`))
 }
