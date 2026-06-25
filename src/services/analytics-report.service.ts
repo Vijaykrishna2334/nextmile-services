@@ -38,35 +38,42 @@ interface ShipRow {
 
 interface CourierStat { total: number; delivered: number; rto: number; lost: number }
 
-interface DispatchSLA   { within1: number; within2: number; within3: number; beyond3: number; total: number }
-interface LoyaltyStat   { uniqueCustomers: number; single: number; double: number; tripleplus: number }
-interface EventRevenue  { event: string; count: number; revenue: number; avg: number }
-interface CityRisk      { city: string; total: number; rtoRate: number; lostRate: number }
-interface SpeedEntry    { state: string; bestCourier: string; avgDays: number }
-interface EventCityRow  { event: string; topCities: [string, number][] }
+interface DispatchSLA    { within1: number; within2: number; within3: number; beyond3: number; total: number }
+interface LoyaltyStat    { uniqueCustomers: number; single: number; double: number; tripleplus: number }
+interface EventRevenue   { event: string; count: number; revenue: number; avg: number }
+interface CityRisk       { city: string; total: number; rtoRate: number; lostRate: number }
+interface SpeedEntry     { state: string; bestCourier: string; avgDays: number }
+interface EventCityRow   { event: string; topCities: [string, number][] }
+interface WeeklyEventStat { event: string; thisWeek: number; lastWeek: number; growth: number; revenue: number }
+interface EventPipeline  { event: string; total: number; shipped: number; pending: number }
 
 interface Metrics {
-  total:           number
-  dispatched:      number
-  delivered:       number
-  inTransit:       number
-  pending:         number
-  rto:             number
-  lost:            number
-  deliveryRate:    string
-  topCities:       [string, number][]
-  topStates:       [string, number][]
-  byCourier:       Record<string, CourierStat>
-  dispatchSLA:     DispatchSLA
-  deliverySpeed:   Record<string, number>
-  speedByState:    SpeedEntry[]
-  revenueByEvent:  EventRevenue[]
-  totalRevenue:    number
-  loyalty:         LoyaltyStat
-  highRtoCities:   CityRisk[]
-  eventCityMatrix: EventCityRow[]
-  byEvent:         [string, number][]
-  staleOrders:     { orderId: string; event: string; city: string; ageDays: number }[]
+  total:            number
+  dispatched:       number
+  delivered:        number
+  inTransit:        number
+  pending:          number
+  rto:              number
+  lost:             number
+  deliveryRate:     string
+  topCities:        [string, number][]
+  topStates:        [string, number][]
+  byCourier:        Record<string, CourierStat>
+  dispatchSLA:      DispatchSLA
+  deliverySpeed:    Record<string, number>
+  speedByState:     SpeedEntry[]
+  revenueByEvent:   EventRevenue[]
+  totalRevenue:     number
+  loyalty:          LoyaltyStat
+  highRtoCities:    CityRisk[]
+  eventCityMatrix:  EventCityRow[]
+  byEvent:          [string, number][]
+  staleOrders:      { orderId: string; event: string; city: string; ageDays: number }[]
+  weeklyEvents:     WeeklyEventStat[]
+  weeklyTopCities:  [string, number][]
+  weeklyRevenue:    number
+  topEventThisWeek: string
+  eventPipeline:    EventPipeline[]
 }
 
 // ── Normalisers ───────────────────────────────────────────────────────────────
@@ -85,16 +92,17 @@ function normalizeState(raw: string): string {
 }
 
 function normalizeEvent(raw: string): string {
-  const s = (raw || '').toLowerCase()
-  if (s.includes('momentum'))                              return 'Momentum Run'
-  if (s.includes('10k steps') || s.includes('10,000'))    return '10K Steps'
-  if (s.includes('women'))                                 return "Women's Run"
+  const s = (raw || '').toLowerCase().trim()
+  if (!s || s === 'watch') return ''  // physical product, not a virtual event
+  if (s.includes('momentum'))                               return 'Momentum Run'
+  if (s.includes('10k steps') || s.includes('10,000'))     return '10K Steps'
+  if (s.includes('women'))                                  return "Women's Run"
   if (s.includes('miles for mom') || s.includes('mother')) return 'Miles for Mom'
-  if (s.includes('conquest'))                              return 'Conquest Ride'
-  if (s.includes('100') && s.includes('km'))              return '100KM Challenge'
-  if (s.includes('progress pack'))                        return 'Progress Pack'
-  if (s.includes('endurance'))                            return 'Endurance Pack'
-  if (s.includes('performance'))                          return 'Performance Pack'
+  if (s.includes('conquest'))                               return 'Conquest Ride'
+  if (s.includes('100') && s.includes('km'))               return '100KM Challenge'
+  if (s.includes('progress pack'))                         return 'Progress Pack'
+  if (s.includes('endurance'))                             return 'Endurance Pack'
+  if (s.includes('performance'))                           return 'Performance Pack'
   return raw.trim() || 'Other'
 }
 
@@ -154,6 +162,7 @@ async function readSheet(): Promise<ShipRow[]> {
       shippedDate:   String(r[COL_SHIPPED_DATE]   || '').trim(),
       deliveredDate: String(r[COL_DELIVERED_DATE] || '').trim(),
     }))
+    .filter(r => r.event)  // exclude Watch and unmapped physical products
 }
 
 // ── Metrics ───────────────────────────────────────────────────────────────────
@@ -292,7 +301,7 @@ function computeMetrics(rows: ShipRow[]): Metrics {
     if (!evCityMap[r.event]) evCityMap[r.event] = {}
     evCityMap[r.event][r.city] = (evCityMap[r.event][r.city] || 0) + 1
   })
-  const mainEvents = ['Momentum Run', '10K Steps', "Women's Run", 'Miles for Mom', 'Conquest Ride', '100KM Challenge']
+  const mainEvents = ['Momentum Run', '10K Steps', "Women's Run", 'Miles for Mom', 'Conquest Ride', '100KM Challenge', 'Progress Pack', 'Endurance Pack', 'Performance Pack']
   const eventCityMatrix: EventCityRow[] = mainEvents
     .filter(ev => evCityMap[ev])
     .map(ev => ({
@@ -309,6 +318,55 @@ function computeMetrics(rows: ShipRow[]): Metrics {
     .sort((a, b) => b.ageDays - a.ageDays)
     .slice(0, 20)
 
+  // ── Weekly breakdown (this week vs last 7–14 days) ──
+  const TODAY_SERIAL    = Date.now() / 86400000 + 25569
+  const THIS_WEEK_START = TODAY_SERIAL - 7
+  const LAST_WEEK_START = TODAY_SERIAL - 14
+
+  const thisWeekRows = active.filter(r => { const s = parseFloat(r.orderDate); return !isNaN(s) && s > 40000 && s >= THIS_WEEK_START })
+  const lastWeekRows = active.filter(r => { const s = parseFloat(r.orderDate); return !isNaN(s) && s > 40000 && s >= LAST_WEEK_START && s < THIS_WEEK_START })
+
+  const twEvMap: Record<string, { count: number; revenue: number }> = {}
+  thisWeekRows.forEach(r => {
+    if (!r.event) return
+    if (!twEvMap[r.event]) twEvMap[r.event] = { count: 0, revenue: 0 }
+    twEvMap[r.event].count++
+    twEvMap[r.event].revenue += r.amount
+  })
+  const lwEvMap: Record<string, number> = {}
+  lastWeekRows.forEach(r => { if (r.event) lwEvMap[r.event] = (lwEvMap[r.event] || 0) + 1 })
+
+  const weeklyEvents: WeeklyEventStat[] = (Object.entries(twEvMap) as [string, { count: number; revenue: number }][])
+    .sort((a, b) => b[1].count - a[1].count)
+    .map(([event, s]) => ({
+      event,
+      thisWeek: s.count,
+      lastWeek: lwEvMap[event] || 0,
+      growth:   lwEvMap[event] > 0 ? Math.round(((s.count - lwEvMap[event]) / lwEvMap[event]) * 100) : 100,
+      revenue:  s.revenue,
+    }))
+
+  const topEventThisWeek = weeklyEvents[0]?.event || '—'
+  const weeklyRevenue    = thisWeekRows.reduce((s, r) => s + r.amount, 0)
+
+  const twCityMap: Record<string, number> = {}
+  thisWeekRows.forEach(r => { if (r.city) twCityMap[r.city] = (twCityMap[r.city] || 0) + 1 })
+  const weeklyTopCities: [string, number][] = (Object.entries(twCityMap) as [string, number][])
+    .sort((a, b) => b[1] - a[1]).slice(0, 8)
+
+  // ── Event pipeline (registered → shipped → pending) ──
+  const pipelineMap: Record<string, { total: number; shipped: number; pending: number }> = {}
+  active.forEach(r => {
+    if (!r.event) return
+    if (!pipelineMap[r.event]) pipelineMap[r.event] = { total: 0, shipped: 0, pending: 0 }
+    pipelineMap[r.event].total++
+    if (['new', 'pending pickup'].includes(r.status)) pipelineMap[r.event].pending++
+    else pipelineMap[r.event].shipped++
+  })
+  const eventPipeline: EventPipeline[] = (Object.entries(pipelineMap) as [string, { total: number; shipped: number; pending: number }][])
+    .map(([event, s]) => ({ event, ...s }))
+    .sort((a, b) => b.pending - a.pending)
+
   return {
     total: active.length, dispatched, delivered, inTransit, pending, rto, lost, deliveryRate,
     topCities, topStates, byEvent, byCourier,
@@ -316,6 +374,8 @@ function computeMetrics(rows: ShipRow[]): Metrics {
     revenueByEvent, totalRevenue,
     loyalty, highRtoCities, eventCityMatrix,
     staleOrders,
+    weeklyEvents, weeklyTopCities, weeklyRevenue, topEventThisWeek,
+    eventPipeline,
   }
 }
 
@@ -350,8 +410,8 @@ Daily snapshot:
 
 Write 2-3 short, specific, actionable bullet points for the ops team. Highlight risks. Plain English only. No headers or markdown.`
 
-    : `You are a logistics and growth analyst for NextMile, an Indian virtual fitness medal company.
-FULL WEEKLY DATA:
+    : `You are a logistics analyst for NextMile, an Indian virtual fitness medal company.
+FULL DATA:
 - Pipeline: ${metrics.total} active orders | ${metrics.delivered} delivered (${metrics.deliveryRate}%) | ${metrics.rto} RTO | ${metrics.lost} lost
 - Dispatch SLA: ${metrics.dispatchSLA.within1} same-day, ${metrics.dispatchSLA.within1+metrics.dispatchSLA.within2} within 2d, ${metrics.dispatchSLA.beyond3} beyond 3d (total ${metrics.dispatchSLA.total})
 - Courier performance: ${courierSummary}
@@ -359,16 +419,11 @@ FULL WEEKLY DATA:
 - Revenue: Total ₹${Math.round(metrics.totalRevenue/1000)}K | ${revSummary}
 - Customer loyalty: ${loyaltySummary}
 - High-RTO cities: ${metrics.highRtoCities.slice(0,5).map(c=>`${c.city} (${c.rtoRate+c.lostRate}% problem rate)`).join(', ')}
-- Top cities: ${metrics.topCities.slice(0,5).map(([c,n])=>`${c}(${n})`).join(', ')}
-- Event leaders by city: ${metrics.eventCityMatrix.map(e=>`${e.event}→${e.topCities[0]?.[0]}`).join(', ')}
+- THIS WEEK: ${metrics.weeklyEvents.reduce((s,e)=>s+e.thisWeek,0)} registrations | ₹${Math.round(metrics.weeklyRevenue/1000)}K revenue | #1: ${metrics.topEventThisWeek}
+- Week-over-week: ${metrics.weeklyEvents.slice(0,4).map(e=>`${e.event} ${e.thisWeek} vs ${e.lastWeek} (${e.growth>0?'+':''}${e.growth}%)`).join(' | ')}
+- Pending to dispatch: ${metrics.eventPipeline.slice(0,3).map(e=>`${e.event}:${e.pending}`).join(', ')}
 
-Write 5 specific insights for the ops and marketing team:
-1. Courier recommendation per region based on actual speed data
-2. Revenue opportunity — which event/city to push harder and why
-3. Logistics risk to fix this week
-4. Customer loyalty insight and how to leverage repeat customers
-5. One city-level growth move based on the data
-Be specific with numbers. Plain English bullet points. No markdown headers. Each point on its own line starting with a bullet symbol.`
+Write 5 specific logistics/ops insights. Be specific with numbers. Plain English. Each point on its own line starting with •`
 
   try {
     const res = await fetch(GEMINI_URL, {
@@ -384,6 +439,51 @@ Be specific with numbers. Plain English bullet points. No markdown headers. Each
     return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || ''
   } catch (e) {
     console.error('[analytics] Gemini call failed:', e)
+    return ''
+  }
+}
+
+async function getMarketingTips(metrics: Metrics): Promise<string> {
+  const token = await getAccessToken('CHATBOT_SERVICE_ACCOUNT_JSON', 'https://www.googleapis.com/auth/cloud-platform')
+  if (!token) return ''
+
+  const loyaltyPct = metrics.loyalty.uniqueCustomers > 0
+    ? Math.round(((metrics.loyalty.double + metrics.loyalty.tripleplus) / metrics.loyalty.uniqueCustomers) * 100)
+    : 0
+
+  const prompt = `You are a growth marketer for NextMile, an Indian virtual fitness medal brand (gonextmile.in).
+Customers register for virtual challenges (5K run, 10K cycling, etc.), complete them, and get a physical medal shipped home.
+
+THIS WEEK'S DATA:
+- Registrations this week: ${metrics.weeklyEvents.reduce((s,e)=>s+e.thisWeek,0)} | Revenue: ₹${Math.round(metrics.weeklyRevenue/1000)}K
+- #1 event this week: ${metrics.topEventThisWeek} (${metrics.weeklyEvents[0]?.thisWeek||0} registrations)
+- Hot cities buying right now: ${metrics.weeklyTopCities.slice(0,5).map(([c,n])=>`${c}(${n})`).join(', ')}
+- Week-over-week: ${metrics.weeklyEvents.slice(0,5).map(e=>`${e.event}: ${e.thisWeek} (${e.growth>0?'+':''}${e.growth}%)`).join(' | ')}
+- Medals still pending dispatch: ${metrics.eventPipeline.slice(0,4).map(e=>`${e.event}=${e.pending} pending`).join(', ')}
+- Customer loyalty: ${metrics.loyalty.uniqueCustomers} customers, ${loyaltyPct}% are repeat buyers (${metrics.loyalty.double} did 2 events, ${metrics.loyalty.tripleplus} did 3+)
+- Event × city leaders: ${metrics.eventCityMatrix.slice(0,4).map(e=>`${e.event}→${e.topCities[0]?.[0]||'?'}`).join(', ')}
+- Avoid spending in (high RTO): ${metrics.highRtoCities.slice(0,3).map(c=>c.city).join(', ')}
+
+Give 4 sharp, specific marketing action items for this week. Use real numbers. Each starts with • on its own line.
+1. Which exact city + event to target RIGHT NOW in Instagram/WhatsApp ads and why
+2. One WhatsApp message idea to re-engage repeat customers (mention their past event, cross-sell another)
+3. One FOMO/urgency message based on pipeline data (e.g. "X medals dispatched this week")
+4. One growth move based on which city or event is growing fastest this week`
+
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        contents:         [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 600, temperature: 0.6 },
+      }),
+      signal: AbortSignal.timeout(20000),
+    })
+    const data = await res.json() as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || ''
+  } catch (e) {
+    console.error('[analytics] Gemini marketing tips failed:', e)
     return ''
   }
 }
@@ -425,7 +525,15 @@ function slaBar(label: string, count: number, total: number, color: string): str
 function insightBox(text: string): string {
   if (!text) return ''
   return `<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px 20px;margin:24px 0;">
-  <div style="font-weight:700;font-size:13px;color:#0369a1;margin-bottom:10px;">🤖 Gemini AI Analysis</div>
+  <div style="font-weight:700;font-size:13px;color:#0369a1;margin-bottom:10px;">🤖 Gemini AI — Logistics Insights</div>
+  <div style="font-size:13px;color:#0f172a;line-height:1.8;white-space:pre-line;">${text}</div>
+</div>`
+}
+
+function marketingBox(text: string): string {
+  if (!text) return ''
+  return `<div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:8px;padding:16px 20px;margin:24px 0;">
+  <div style="font-weight:700;font-size:13px;color:#7c3aed;margin-bottom:10px;">💡 Gemini — Marketing Intelligence</div>
   <div style="font-size:13px;color:#0f172a;line-height:1.8;white-space:pre-line;">${text}</div>
 </div>`
 }
@@ -502,7 +610,7 @@ ${staleHtml}`
 
 // ── Weekly email ──────────────────────────────────────────────────────────────
 
-function buildWeeklyEmail(m: Metrics, insight: string): { subject: string; html: string } {
+function buildWeeklyEmail(m: Metrics, insight: string, marketingTips: string): { subject: string; html: string } {
   const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
 
   // Revenue table
@@ -583,6 +691,43 @@ function buildWeeklyEmail(m: Metrics, insight: string): { subject: string; html:
     `<tr><td style="padding:7px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;">${state}</td><td style="padding:7px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;">${count}</td></tr>`
   ).join('')
 
+  // This week vs last week table
+  const weeklyEventRows = m.weeklyEvents.map(e => {
+    const growthColor = e.growth > 0 ? '#16a34a' : e.growth < 0 ? '#dc2626' : '#64748b'
+    const growthSign  = e.growth > 0 ? '+' : ''
+    return `<tr>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:600;">${e.event}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;">${e.thisWeek}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#64748b;">${e.lastWeek}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:${growthColor};">${growthSign}${e.growth}%</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#059669;">₹${Math.round(e.revenue/1000)}K</td>
+    </tr>`
+  }).join('')
+
+  // Event pipeline rows
+  const pipelineRows = m.eventPipeline.map(e => {
+    const pct    = e.total > 0 ? Math.round((e.shipped / e.total) * 100) : 0
+    const pColor = e.pending > 100 ? '#dc2626' : e.pending > 30 ? '#d97706' : '#16a34a'
+    return `<tr>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:600;">${e.event}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;">${e.total}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#059669;">${e.shipped} <span style="color:#94a3b8;font-weight:400;">(${pct}%)</span></td>
+      <td style="padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:${pColor};">${e.pending} ⏳</td>
+    </tr>`
+  }).join('')
+
+  // This week's target cities
+  const weekCityRows = m.weeklyTopCities.map(([city, count], i) =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#94a3b8;">${i + 1}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:600;">${city}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#7c3aed;">${count} orders</td>
+    </tr>`
+  ).join('')
+
+  const thisWeekTotal = m.weeklyEvents.reduce((s, e) => s + e.thisWeek, 0)
+  const topEvRev      = m.weeklyEvents[0]
+
   const slaTotal = m.dispatchSLA.total
 
   const body = `
@@ -598,6 +743,17 @@ function buildWeeklyEmail(m: Metrics, insight: string): { subject: string; html:
     ${statCell('RTO',            m.rto,                '#ef4444')}
     ${statCell('Lost',           m.lost,               '#dc2626')}
   </tr>
+</table>
+
+<!-- This Week Snapshot -->
+${sectionHead('📅', `This Week vs Last Week — ${thisWeekTotal} registrations | ₹${Math.round(m.weeklyRevenue/1000)}K revenue`)}
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 16px;margin-bottom:10px;">
+  <strong style="font-size:13px;color:#15803d;">🏆 This Week's #1 Event: ${m.topEventThisWeek}</strong>
+  ${topEvRev ? ` — ${topEvRev.thisWeek} registrations | ₹${Math.round(topEvRev.revenue/1000)}K | vs ${topEvRev.lastWeek} last week` : ''}
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+  ${tableHead('Event', 'This Week', 'Last Week', 'Growth', 'Revenue This Week')}
+  <tbody>${weeklyEventRows || '<tr><td colspan="5" style="padding:12px;color:#64748b;font-size:13px;">No orders in last 7 days</td></tr>'}</tbody>
 </table>
 
 <!-- Revenue by Event -->
@@ -684,6 +840,27 @@ ${sectionHead('🎯', 'Event × City Demand Matrix')}
   <tbody>${matrixRows}</tbody>
 </table>
 
+<!-- Event Pipeline — Remaining Registrations -->
+${sectionHead('📦', 'Event Registration Pipeline — Remaining to Dispatch')}
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+  ${tableHead('Event', 'Total Registered', 'Dispatched', 'Pending ⏳')}
+  <tbody>${pipelineRows}</tbody>
+</table>
+
+<!-- This Week's Target Cities for Marketing -->
+${m.weeklyTopCities.length > 0 ? `
+${sectionHead('🏙️', "This Week's Target Cities (Focus ad spend here)")}
+<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:10px 16px;margin-bottom:8px;font-size:12px;color:#92400e;">
+  These cities are actively buying this week — run WhatsApp and Instagram campaigns here for maximum conversion.
+</div>
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+  ${tableHead('#', 'City', 'Orders This Week')}
+  <tbody>${weekCityRows}</tbody>
+</table>` : ''}
+
+<!-- Marketing Intelligence -->
+${marketingBox(marketingTips)}
+
 <!-- State Breakdown -->
 ${sectionHead('📊', 'State Breakdown')}
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -712,10 +889,13 @@ export async function runDailyAnalyticsReport(): Promise<void> {
 export async function runWeeklyAnalyticsReport(): Promise<void> {
   const rows    = await readSheet()
   const metrics = computeMetrics(rows)
-  const insight = await getGeminiInsight(metrics, 'weekly')
+  const [insight, marketingTips] = await Promise.all([
+    getGeminiInsight(metrics, 'weekly'),
+    getMarketingTips(metrics),
+  ])
 
-  const { subject, html } = buildWeeklyEmail(metrics, insight)
+  const { subject, html } = buildWeeklyEmail(metrics, insight, marketingTips)
   const to   = process.env.ALERT_EMAIL || 'support@gonextmile.in'
   const sent = await sendEmail(to, subject, html)
-  console.log(`[analytics] Weekly → ${to}: ${sent ? 'sent' : 'failed'} | total=${metrics.total} revenue=₹${Math.round(metrics.totalRevenue/1000)}K rate=${metrics.deliveryRate}%`)
+  console.log(`[analytics] Weekly → ${to}: ${sent ? 'sent' : 'failed'} | total=${metrics.total} revenue=₹${Math.round(metrics.totalRevenue/1000)}K rate=${metrics.deliveryRate}% thisWeek=${metrics.weeklyEvents.reduce((s,e)=>s+e.thisWeek,0)}`)
 }
