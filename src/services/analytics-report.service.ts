@@ -103,6 +103,8 @@ function normalizeEvent(raw: string): string {
   if (s.includes('progress pack'))                         return 'Progress Pack'
   if (s.includes('endurance'))                             return 'Endurance Pack'
   if (s.includes('performance'))                           return 'Performance Pack'
+  // "NextMile 3K/5K/10K Challenge" is the same as Momentum Run — checked last so Women's Run/Mom etc. match first
+  if (s.includes('3k/5k') || s.includes('5k/10k') || (s.includes('3k') && s.includes('5k'))) return 'Momentum Run'
   return raw.trim() || 'Other'
 }
 
@@ -303,10 +305,9 @@ function computeMetrics(rows: ShipRow[]): Metrics {
   })
   const mainEvents = ['Momentum Run', '10K Steps', "Women's Run", 'Miles for Mom', 'Conquest Ride', '100KM Challenge', 'Progress Pack', 'Endurance Pack', 'Performance Pack']
   const eventCityMatrix: EventCityRow[] = mainEvents
-    .filter(ev => evCityMap[ev])
     .map(ev => ({
       event: ev,
-      topCities: (Object.entries(evCityMap[ev]) as [string, number][])
+      topCities: (Object.entries(evCityMap[ev] || {}) as [string, number][])
         .sort((a, b) => b[1] - a[1]).slice(0, 3),
     }))
 
@@ -363,9 +364,11 @@ function computeMetrics(rows: ShipRow[]): Metrics {
     if (['new', 'pending pickup'].includes(r.status)) pipelineMap[r.event].pending++
     else pipelineMap[r.event].shipped++
   })
-  const eventPipeline: EventPipeline[] = (Object.entries(pipelineMap) as [string, { total: number; shipped: number; pending: number }][])
-    .map(([event, s]) => ({ event, ...s }))
-    .sort((a, b) => b.pending - a.pending)
+  const eventPipeline: EventPipeline[] = mainEvents
+    .map(ev => pipelineMap[ev]
+      ? { event: ev, ...pipelineMap[ev] }
+      : { event: ev, total: 0, shipped: 0, pending: 0 }
+    )
 
   return {
     total: active.length, dispatched, delivered, inTransit, pending, rto, lost, deliveryRate,
@@ -401,19 +404,22 @@ async function getGeminiInsight(metrics: Metrics, type: 'daily' | 'weekly'): Pro
 
   const prompt = type === 'daily'
     ? `You are a logistics analyst for NextMile, an Indian virtual fitness medal company.
+IMPORTANT: "Pending" orders are waiting for the CUSTOMER to submit their activity proof. Dispatch only happens after customer submission — do NOT flag pending orders as a logistics issue.
+
 Daily snapshot:
-- Pending dispatch: ${metrics.pending} | In transit: ${metrics.inTransit} | Delivered: ${metrics.delivered} (${metrics.deliveryRate}%)
+- Awaiting customer submission: ${metrics.pending} | In transit: ${metrics.inTransit} | Delivered: ${metrics.delivered} (${metrics.deliveryRate}%)
 - RTO: ${metrics.rto} | Lost: ${metrics.lost}
-- Dispatch SLA: ${metrics.dispatchSLA.within1} dispatched same day, ${metrics.dispatchSLA.beyond3} took >3 days (out of ${metrics.dispatchSLA.total})
-- Stale orders >3 days: ${metrics.staleOrders.length}
+- Dispatch SLA (of submitted orders): ${metrics.dispatchSLA.within1} dispatched same day, ${metrics.dispatchSLA.beyond3} took >3 days (out of ${metrics.dispatchSLA.total})
 - Courier summary: ${courierSummary}
 
-Write 2-3 short, specific, actionable bullet points for the ops team. Highlight risks. Plain English only. No headers or markdown.`
+Write 2-3 short, specific, actionable bullet points for the ops team about courier performance, RTO risks, and delivery speed. Plain English only.`
 
     : `You are a logistics analyst for NextMile, an Indian virtual fitness medal company.
+IMPORTANT CONTEXT: Orders with status "pending" are waiting for the CUSTOMER to submit their activity proof (e.g. run/ride completion). Dispatch only happens AFTER customer submission. Never suggest pushing dispatch for pending orders — they are not a logistics delay, they are awaiting customer action.
+
 FULL DATA:
 - Pipeline: ${metrics.total} active orders | ${metrics.delivered} delivered (${metrics.deliveryRate}%) | ${metrics.rto} RTO | ${metrics.lost} lost
-- Dispatch SLA: ${metrics.dispatchSLA.within1} same-day, ${metrics.dispatchSLA.within1+metrics.dispatchSLA.within2} within 2d, ${metrics.dispatchSLA.beyond3} beyond 3d (total ${metrics.dispatchSLA.total})
+- Dispatch SLA (of orders already submitted): ${metrics.dispatchSLA.within1} same-day, ${metrics.dispatchSLA.within1+metrics.dispatchSLA.within2} within 2d, ${metrics.dispatchSLA.beyond3} beyond 3d (total ${metrics.dispatchSLA.total})
 - Courier performance: ${courierSummary}
 - Best courier per state: ${stateSummary}
 - Revenue: Total ₹${Math.round(metrics.totalRevenue/1000)}K | ${revSummary}
@@ -421,9 +427,9 @@ FULL DATA:
 - High-RTO cities: ${metrics.highRtoCities.slice(0,5).map(c=>`${c.city} (${c.rtoRate+c.lostRate}% problem rate)`).join(', ')}
 - THIS WEEK: ${metrics.weeklyEvents.reduce((s,e)=>s+e.thisWeek,0)} registrations | ₹${Math.round(metrics.weeklyRevenue/1000)}K revenue | #1: ${metrics.topEventThisWeek}
 - Week-over-week: ${metrics.weeklyEvents.slice(0,4).map(e=>`${e.event} ${e.thisWeek} vs ${e.lastWeek} (${e.growth>0?'+':''}${e.growth}%)`).join(' | ')}
-- Pending to dispatch: ${metrics.eventPipeline.slice(0,3).map(e=>`${e.event}:${e.pending}`).join(', ')}
+- Awaiting customer submission: ${metrics.eventPipeline.slice(0,3).map(e=>`${e.event}:${e.pending}`).join(', ')}
 
-Write 5 specific logistics/ops insights. Be specific with numbers. Plain English. Each point on its own line starting with •`
+Write 5 specific logistics/ops insights focused on courier selection, RTO reduction, delivery speed, and SLA improvement. Do NOT comment on pending orders as a dispatch issue. Be specific with numbers. Plain English. Each point on its own line starting with •`
 
   try {
     const res = await fetch(GEMINI_URL, {
@@ -459,7 +465,7 @@ THIS WEEK'S DATA:
 - #1 event this week: ${metrics.topEventThisWeek} (${metrics.weeklyEvents[0]?.thisWeek||0} registrations)
 - Hot cities buying right now: ${metrics.weeklyTopCities.slice(0,5).map(([c,n])=>`${c}(${n})`).join(', ')}
 - Week-over-week: ${metrics.weeklyEvents.slice(0,5).map(e=>`${e.event}: ${e.thisWeek} (${e.growth>0?'+':''}${e.growth}%)`).join(' | ')}
-- Medals still pending dispatch: ${metrics.eventPipeline.slice(0,4).map(e=>`${e.event}=${e.pending} pending`).join(', ')}
+- Customers yet to submit activity proof: ${metrics.eventPipeline.slice(0,4).map(e=>`${e.event}=${e.pending}`).join(', ')} (dispatch happens only AFTER customer submits — remind them to submit!)
 - Customer loyalty: ${metrics.loyalty.uniqueCustomers} customers, ${loyaltyPct}% are repeat buyers (${metrics.loyalty.double} did 2 events, ${metrics.loyalty.tripleplus} did 3+)
 - Event × city leaders: ${metrics.eventCityMatrix.slice(0,4).map(e=>`${e.event}→${e.topCities[0]?.[0]||'?'}`).join(', ')}
 - Avoid spending in (high RTO): ${metrics.highRtoCities.slice(0,3).map(c=>c.city).join(', ')}
